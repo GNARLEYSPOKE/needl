@@ -437,7 +437,6 @@ export interface Database {
         Args: {
           query_embedding: string;
           search_org_id: string;
-          exclude_chapter_ids: string[];
           geo_filter?: string[] | null;
           match_limit?: number;
         };

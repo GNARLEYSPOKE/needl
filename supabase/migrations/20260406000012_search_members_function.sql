@@ -1,10 +1,10 @@
 -- Migration 012: pgvector similarity search RPC function
 -- Called via supabase.rpc('search_members', { ... }) from Server Actions.
+-- Returns members from ALL chapters within the same organization.
 
 CREATE OR REPLACE FUNCTION search_members(
   query_embedding vector(1536),
   search_org_id uuid,
-  exclude_chapter_ids uuid[],
   geo_filter text[] DEFAULT NULL,
   match_limit int DEFAULT 3
 )
@@ -34,7 +34,6 @@ AS $$
     AND cm.status = 'active'
     AND cm.deleted_at IS NULL
     AND ch.organization_id = search_org_id
-    AND NOT (cm.chapter_id = ANY(exclude_chapter_ids))
     AND (geo_filter IS NULL OR mp.geography_served && geo_filter)
     AND 1 - (mp.embedding <=> query_embedding) > 0.3
   ORDER BY mp.member_id, match_score DESC

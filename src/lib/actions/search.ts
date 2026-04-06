@@ -33,25 +33,19 @@ export async function searchMembers(
 
   const { query, countryFilter } = parsed.data;
 
-  // Get requester's chapter IDs and org ID
+  // Get requester's org ID
   const adminClient = createServiceClient();
-  const { data: memberships } = await adminClient
-    .from('chapter_memberships')
-    .select('chapter_id, chapters!inner(organization_id)')
-    .eq('member_id', member.data.memberId)
-    .eq('status', 'active');
+  const { data: memberRow } = await adminClient
+    .from('members')
+    .select('organization_id')
+    .eq('id', member.data.memberId)
+    .single();
 
-  if (!memberships || memberships.length === 0) {
-    return { data: [], error: null };
-  }
-
-  const chapterIds = memberships.map((m) => m.chapter_id);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase join typing limitation
-  const orgId = (memberships[0] as any).chapters?.organization_id as string;
-
-  if (!orgId) {
+  if (!memberRow) {
     return { data: null, error: 'Organization not found' };
   }
+
+  const orgId = memberRow.organization_id;
 
   // Embed the search query
   const openaiKey = process.env.OPENAI_API_KEY;
@@ -70,7 +64,6 @@ export async function searchMembers(
   const { data: results, error: rpcError } = await supabase.rpc('search_members', {
     query_embedding: JSON.stringify(embedResult.data.embedding),
     search_org_id: orgId,
-    exclude_chapter_ids: chapterIds,
     geo_filter: geoFilter,
     match_limit: 3,
   });
