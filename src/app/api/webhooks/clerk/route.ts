@@ -1,0 +1,95 @@
+import { Webhook } from 'svix';
+import { headers } from 'next/headers';
+import { type WebhookEvent } from '@clerk/nextjs/server';
+import { createServiceClient } from '@/lib/supabase/admin';
+
+export async function POST(req: Request): Promise<Response> {
+  const webhookSecret = process.env.CLERK_WEBHOOK_SECRET;
+  if (!webhookSecret) {
+    return new Response('Webhook secret not configured', { status: 500 });
+  }
+
+  // Verify Svix signature
+  const headerPayload = await headers();
+  const svixId = headerPayload.get('svix-id');
+  const svixTimestamp = headerPayload.get('svix-timestamp');
+  const svixSignature = headerPayload.get('svix-signature');
+
+  if (!svixId || !svixTimestamp || !svixSignature) {
+    return new Response('Missing svix headers', { status: 400 });
+  }
+
+  const payload = await req.text();
+  const wh = new Webhook(webhookSecret);
+
+  let event: WebhookEvent;
+  try {
+    event = wh.verify(payload, {
+      'svix-id': svixId,
+      'svix-timestamp': svixTimestamp,
+      'svix-signature': svixSignature,
+    }) as WebhookEvent;
+  } catch {
+    return new Response('Invalid signature', { status: 400 });
+  }
+
+  const supabase = createServiceClient();
+
+  if (event.type === 'user.created') {
+    const { id, email_addresses, first_name, last_name, image_url, external_accounts } = event.data;
+
+    const primaryEmail = email_addresses.find((e) => e.id === event.data.primary_email_address_id);
+    const linkedInAccount = external_accounts?.find((a) => a.provider === 'oauth_linkedin_oidc');
+    const fullName = [first_name, last_name].filter(Boolean).join(' ') || 'New Member';
+
+    // Look up the organization for this deployment
+    const { data: org } = await supabase.from('organizations').select('id').limit(1).single();
+
+    if (!org) {
+      console.error('No organization found for member upsert');
+      return new Response('OK', { status: 200 });
+    }
+
+    const { error } = await supabase.from('members').upsert(
+      {
+        id,
+        organization_id: org.id,
+        email: primaryEmail?.email_address ?? '',
+        full_name: fullName,
+        avatar_url: image_url ?? null,
+        linkedin_url: linkedInAccount?.public_metadata?.profile_url
+          ? String(linkedInAccount.public_metadata.profile_url)
+          : null,
+        data_residency: 'CA', // Default for CC Canada deployment
+      },
+      { onConflict: 'id' },
+    );
+
+    if (error) {
+      console.error('Failed to upsert member:', error.message);
+    }
+  }
+
+  if (event.type === 'user.updated') {
+    const { id, email_addresses, first_name, last_name, image_url } = event.data;
+
+    const primaryEmail = email_addresses.find((e) => e.id === event.data.primary_email_address_id);
+    const fullName = [first_name, last_name].filter(Boolean).join(' ') || 'New Member';
+
+    const { error } = await supabase
+      .from('members')
+      .update({
+        email: primaryEmail?.email_address ?? '',
+        full_name: fullName,
+        avatar_url: image_url ?? null,
+      })
+      .eq('id', id);
+
+    if (error) {
+      console.error('Failed to update member:', error.message);
+    }
+  }
+
+  // Return 200 for all events (including unhandled types)
+  return new Response('OK', { status: 200 });
+}

@@ -37,6 +37,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       countries: {
         Row: {
@@ -63,6 +64,7 @@ export interface Database {
           national_director_id?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       regions: {
         Row: {
@@ -86,6 +88,7 @@ export interface Database {
           regional_director_id?: string | null;
           created_at?: string;
         };
+        Relationships: [];
       };
       chapters: {
         Row: {
@@ -127,6 +130,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       chapter_memberships: {
         Row: {
@@ -174,6 +178,7 @@ export interface Database {
           created_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       members: {
         Row: {
@@ -221,6 +226,7 @@ export interface Database {
           created_at?: string;
           deleted_at?: string | null;
         };
+        Relationships: [];
       };
       member_profiles: {
         Row: {
@@ -237,7 +243,7 @@ export interface Database {
           geography_served: string[];
           industry_tags: string[];
           linkedin_imported_at: string | null;
-          embedding: string | null; // vector(1536) returned as string
+          embedding: string | null;
           embedding_updated_at: string | null;
           profile_completeness: number;
           created_at: string;
@@ -283,6 +289,7 @@ export interface Database {
           created_at?: string;
           updated_at?: string;
         };
+        Relationships: [];
       };
       notification_preferences: {
         Row: {
@@ -315,6 +322,7 @@ export interface Database {
           intro_notifications?: boolean;
           updated_at?: string;
         };
+        Relationships: [];
       };
       testimonials: {
         Row: {
@@ -341,6 +349,7 @@ export interface Database {
           is_visible?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       forums: {
         Row: {
@@ -370,6 +379,7 @@ export interface Database {
           is_active?: boolean;
           created_at?: string;
         };
+        Relationships: [];
       };
       forum_memberships: {
         Row: {
@@ -399,19 +409,20 @@ export interface Database {
           status?: Database['public']['Enums']['forum_membership_status'];
           created_at?: string;
         };
+        Relationships: [];
       };
     };
     Views: Record<string, never>;
     Functions: {
-      organization_id: {
+      get_organization_id: {
         Args: Record<string, never>;
         Returns: string;
       };
-      chapter_ids: {
+      get_chapter_ids: {
         Args: Record<string, never>;
         Returns: string[];
       };
-      role: {
+      get_role: {
         Args: Record<string, never>;
         Returns: string;
       };
@@ -419,7 +430,13 @@ export interface Database {
     Enums: {
       meeting_format: 'in_person' | 'virtual' | 'hybrid';
       member_role: 'member' | 'director' | 'co_director';
-      membership_status: 'active' | 'lapsed' | 'suspended' | 'invited' | 'pending' | 'cancelled';
+      membership_status:
+        | 'active'
+        | 'lapsed'
+        | 'suspended'
+        | 'invited'
+        | 'pending'
+        | 'cancelled';
       email_digest_frequency: 'daily' | 'weekly' | 'never';
       forum_role: 'member' | 'facilitator';
       forum_membership_status: 'active' | 'inactive';
