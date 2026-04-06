@@ -1,19 +1,18 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: member } = await supabase
     .from('members')
     .select('full_name, onboarding_completed_at')
     .eq('clerk_user_id', userId)
     .single();
 
-  // If member hasn't completed onboarding, redirect
   if (member && !member.onboarding_completed_at) {
     redirect('/onboarding');
   }

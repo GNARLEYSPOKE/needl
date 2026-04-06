@@ -1,6 +1,6 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { createClient } from '@/lib/supabase/server';
+import { createServiceClient } from '@/lib/supabase/admin';
 import { getMyProfile } from '@/lib/actions/profile';
 import { OnboardingForm } from '@/components/profile/onboarding-form';
 
@@ -8,7 +8,7 @@ export default async function OnboardingPage() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
-  const supabase = await createClient();
+  const supabase = createServiceClient();
   const { data: member } = await supabase
     .from('members')
     .select('full_name, avatar_url, onboarding_completed_at')
