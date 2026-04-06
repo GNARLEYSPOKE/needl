@@ -27,6 +27,7 @@ FAIL if missing on any data table.
 
 **Check 3: Tenant Isolation — Cross-Organization Access**
 Using two different JWT contexts (org A and org B):
+
 - Confirm org A member cannot SELECT any row from org B's members table
 - Confirm org A member cannot SELECT any row from org B's asks table
 - Confirm org A member cannot SELECT any row from org B's chapters table
@@ -35,6 +36,7 @@ FAIL if any cross-organization row is returned.
 
 **Check 4: Cross-Chapter Profile Visibility**
 Using a member JWT from Chapter 1 querying member_profiles of a member in Chapter 2:
+
 - Confirm email is NOT returned
 - Confirm phone is NOT returned
 - Confirm company_name, tagline, what_i_do ARE returned
@@ -49,6 +51,7 @@ FAIL if DELETE succeeds.
 
 **Check 6: chapter_memberships Indexes**
 Confirm both indexes exist:
+
 - idx_chapter_memberships_chapter_status ON chapter_memberships(chapter_id, status)
 - idx_chapter_memberships_member_status ON chapter_memberships(member_id, status)
 
@@ -56,6 +59,7 @@ FAIL if either index is missing.
 
 **Check 7: HNSW Indexes on Vector Columns**
 Confirm HNSW indexes exist on:
+
 - member_profiles.embedding
 - asks.embedding
 

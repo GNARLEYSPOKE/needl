@@ -5,6 +5,7 @@ AI-powered member network platform for franchise-model networking organizations 
 <!-- Keep this file under 200 lines. Deep context lives in docs/. Rules in .claude/rules/. Skills in .claude/skills/. -->
 
 ## Stack
+
 - **Framework**: Next.js 15 (App Router, RSC, Server Actions)
 - **Database**: Supabase Postgres + pgvector — RLS is the source of truth for data access
 - **Auth**: Clerk — Google + LinkedIn OAuth, JWT with organization_id + chapter_ids[] + role
@@ -17,10 +18,12 @@ AI-powered member network platform for franchise-model networking organizations 
 - **Errors**: Sentry — configured from day one, free tier
 
 ## Architecture
+
 Modular monolith, vertical slice, feature-based folders. Every external service sits behind a typed abstraction interface in src/lib/services/ — application code never calls vendor SDKs directly.
 See @docs/architecture.md for data flow diagrams and ADRs.
 
 ## Folder Structure
+
 ```
 src/
   app/                    # Next.js App Router — pages, layouts, route handlers
@@ -79,10 +82,12 @@ ECOSYSTEM.md              # Domain model — read before touching any schema or 
 ```
 
 ## Domain Model
+
 Read @ECOSYSTEM.md before modifying any database schema or writing data-access code.
 `chapter_memberships` is the load-bearing join table. Almost every meaningful query joins through it.
 
 ## Commands
+
 ```bash
 npm run dev              # Development server (http://localhost:3000)
 npm run build            # Production build
@@ -97,6 +102,7 @@ supabase functions serve # Serve Edge Functions locally
 ```
 
 ## Conventions
+
 - TypeScript strict mode. No `any`. No untyped function params. No type assertions without comment.
 - Named exports only. No default exports. Ever.
 - Functional components only. No class components.
@@ -109,7 +115,9 @@ supabase functions serve # Serve Edge Functions locally
 - Never block a UI response waiting for an embedding call — always async via Edge Function.
 
 ## Quality Policy
+
 Zero tolerance for:
+
 - Hydration errors
 - TypeScript errors (pre-commit hook will catch and block)
 - Placeholder implementations or `// TODO` in any committed code
@@ -117,6 +125,7 @@ Zero tolerance for:
 - Direct vendor SDK calls outside src/lib/services/
 
 ## Critical Build Rules
+
 1. `chapter_memberships` indexes `(chapter_id, status)` and `(member_id, status)` must exist from migration 003. Do not remove or defer these.
 2. Embedding pipeline is always async. Never await an embedding call in a Server Action or route handler.
 3. The `matches` table is append-only. There is no DELETE RLS policy on it. Do not add one.
@@ -124,19 +133,23 @@ Zero tolerance for:
 5. Seed the database before demoing. Zero search results kills a demo.
 
 ## Git Workflow
+
 - Commit after every phase in specs/tasks.md
 - Format: `feat(scope): description` or `fix(scope): description`
 - Never force push to main
 - PR required for any merge to main
 
 ## Plan Mode
+
 Use Plan Mode (Shift+Tab twice) before:
+
 - Any change touching more than 3 files
 - Any schema change or new migration
 - Any auth, billing, or service abstraction modification
 - Any new feature implementation
 
 ## Context Management
+
 - /clear between unrelated tasks
 - /compact with "preserve: architectural decisions, service abstraction layer, current task, error states" before context limit
 - /audit-rls before any production deployment

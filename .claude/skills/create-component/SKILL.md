@@ -8,6 +8,7 @@ allowed-tools: Read Write Glob
 Create a component named $ARGUMENTS[0] that: $ARGUMENTS[1]
 
 Steps:
+
 1. Read src/components/ui/ to check if ShadCN already has a suitable primitive
 2. Read docs/ui-system.md for the relevant screen pattern (search, profile, ask, intro, admin)
 3. Determine: Server Component or Client Component?

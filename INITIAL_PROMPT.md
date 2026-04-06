@@ -72,6 +72,7 @@ Before writing a single line of code:
 3. Wait for approval before executing
 
 When Phase 0 is complete:
+
 - Run `npm run type-check` — must pass
 - Run `npm run lint` — must pass
 - Run `npm run build` — must pass

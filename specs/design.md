@@ -7,19 +7,19 @@ where every external dependency sits behind a swappable service abstraction inte
 
 ## Stack Decisions
 
-| Layer | Technology | Version | Rationale |
-|-------|------------|---------|-----------|
-| Framework | Next.js | 15 | App Router, RSC, Server Actions — best Next.js DX available |
-| Database | Supabase Postgres + pgvector | latest | RLS, realtime, storage, vector search in one platform |
-| Auth | Clerk | latest | Best Next.js auth DX, organizations map to chapters, LinkedIn social login built-in |
-| Email | Resend | latest | Clean API, excellent deliverability, developer-friendly |
-| Embeddings | OpenAI text-embedding-3-small | latest | Best price/performance for 1536-dim vectors, battle-tested with pgvector |
-| AI Drafting | Anthropic Claude | claude-sonnet-4-6 | Profile drafting, match rationale generation, ask nudges |
-| Billing | Stripe | latest | Subscription management, invoicing, per-chapter billing |
-| Deployment | Vercel | latest | Edge, preview deployments on every PR, zero-config Next.js |
-| Styling | Tailwind CSS 4 + ShadCN UI | 4 / latest | Utility-first, mobile-first, composable component system |
-| Error Tracking | Sentry | latest | Free tier covers prototype and pilot, upgrade post-scale |
-| Storage | Supabase Storage | latest | Profile photos and headshots only — simple, integrated |
+| Layer          | Technology                    | Version           | Rationale                                                                           |
+| -------------- | ----------------------------- | ----------------- | ----------------------------------------------------------------------------------- |
+| Framework      | Next.js                       | 15                | App Router, RSC, Server Actions — best Next.js DX available                         |
+| Database       | Supabase Postgres + pgvector  | latest            | RLS, realtime, storage, vector search in one platform                               |
+| Auth           | Clerk                         | latest            | Best Next.js auth DX, organizations map to chapters, LinkedIn social login built-in |
+| Email          | Resend                        | latest            | Clean API, excellent deliverability, developer-friendly                             |
+| Embeddings     | OpenAI text-embedding-3-small | latest            | Best price/performance for 1536-dim vectors, battle-tested with pgvector            |
+| AI Drafting    | Anthropic Claude              | claude-sonnet-4-6 | Profile drafting, match rationale generation, ask nudges                            |
+| Billing        | Stripe                        | latest            | Subscription management, invoicing, per-chapter billing                             |
+| Deployment     | Vercel                        | latest            | Edge, preview deployments on every PR, zero-config Next.js                          |
+| Styling        | Tailwind CSS 4 + ShadCN UI    | 4 / latest        | Utility-first, mobile-first, composable component system                            |
+| Error Tracking | Sentry                        | latest            | Free tier covers prototype and pilot, upgrade post-scale                            |
+| Storage        | Supabase Storage              | latest            | Profile photos and headshots only — simple, integrated                              |
 
 ## Tenancy Architecture
 
@@ -44,6 +44,7 @@ at the enterprise tier.
 ## Data Flow Diagrams
 
 ### Auth Flow
+
 ```
 Browser
   → Clerk hosted UI (Google or LinkedIn OAuth)
@@ -55,6 +56,7 @@ Browser
 ```
 
 ### Member Profile + Embedding Pipeline
+
 ```
 Member saves profile
   → Server Action validates input (Zod)
@@ -68,6 +70,7 @@ Member saves profile
 ```
 
 ### Standing Ask + Match Flow
+
 ```
 Member posts Ask
   → Server Action validates + inserts asks row
@@ -81,6 +84,7 @@ Member posts Ask
 ```
 
 ### Warm Introduction Flow
+
 ```
 Member requests intro to matched member
   → Server Action creates introductions row (status: pending)
@@ -94,6 +98,7 @@ Member requests intro to matched member
 ```
 
 ### Billing Flow
+
 ```
 New chapter onboarded
   → Network Admin creates chapter in Needl admin
@@ -108,6 +113,7 @@ New chapter onboarded
 ## Key Architectural Decisions (ADRs)
 
 ### ADR-001: Dedicated Deployment Per Network Customer
+
 **Date:** April 2026
 **Status:** Accepted
 **Context:** Needl will serve multiple network organizations (CC, BNI, EO). Each organization
@@ -123,6 +129,7 @@ risk entirely and make the compliance conversation simple.
 if customer count exceeds 20.
 
 ### ADR-002: Async Embedding Pipeline via Edge Functions
+
 **Date:** April 2026
 **Status:** Accepted
 **Context:** Profile saves and Ask posts need vector embeddings for search and matching.
@@ -138,6 +145,7 @@ is stale. Acceptable. Search results show a "updating..." indicator if embedding
 is more than 60 seconds behind updated_at.
 
 ### ADR-003: Clerk Over Supabase Auth
+
 **Date:** April 2026
 **Status:** Accepted
 **Context:** Auth provider selection with LinkedIn social login and multi-chapter membership
@@ -152,6 +160,7 @@ is significant for a solo + Claude Code build.
 if needed behind the AuthService abstraction.
 
 ### ADR-004: Service Abstraction Layer
+
 **Date:** April 2026
 **Status:** Accepted
 **Context:** Needl is built to sell. The acquirer (likely BNI) will have preferred vendors
@@ -164,6 +173,7 @@ a one-file change. This is a due diligence feature as much as an engineering one
 **Consequences:** Slightly more boilerplate upfront. Worth it for every file after.
 
 ### ADR-005: chapter_memberships as Load-Bearing Table
+
 **Date:** April 2026
 **Status:** Accepted
 **Context:** A member's meaningful context (role, profession category, status, tenure) lives
@@ -199,12 +209,14 @@ operations.
 ## Scalability Ceiling
 
 This architecture comfortably supports:
+
 - 1 network customer per deployment
 - Up to 500 chapters per deployment
 - Up to 12,500 members per deployment (500 chapters × 25 members)
 - pgvector cosine similarity search on 12,500 member embeddings is fast with an HNSW index
 
 The architecture needs re-evaluation when:
+
 - A single network customer exceeds 50,000 members (pgvector index strategy changes)
 - Needl manages more than 20 customer deployments (ops automation required)
 - Real-time collaborative features are added (Supabase Realtime channel limits apply)

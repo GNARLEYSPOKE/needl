@@ -7,6 +7,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 0: Project Scaffold
+
 - [ ] Initialize Next.js 15 with TypeScript strict mode (`npx create-next-app@latest needl --typescript --tailwind --app --src-dir`)
 - [ ] Configure Tailwind CSS 4 and install ShadCN UI (`npx shadcn@latest init`)
 - [ ] Install ShadCN base components: button, card, input, label, badge, avatar, skeleton, toast, dialog, dropdown-menu, sheet
@@ -27,6 +28,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 1: Database Foundation
+
 - [ ] Enable pgvector extension in Supabase: `CREATE EXTENSION IF NOT EXISTS vector`
 - [ ] Migration 001: organizations, countries, regions tables with RLS
 - [ ] Migration 002: chapters table with RLS
@@ -52,6 +54,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 2: Auth and Session
+
 - [ ] Install and configure Clerk for Next.js 15 App Router
 - [ ] Configure Clerk: enable Google OAuth, enable LinkedIn OAuth
 - [ ] Create Clerk webhook handler at `/api/webhooks/clerk`
@@ -72,6 +75,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 3: Member Profile
+
 - [ ] Build: `/onboarding` multi-step flow
   - Step 1: Profile basics (company name, tagline, what_i_do)
   - Step 2: Who I serve and results I deliver
@@ -95,6 +99,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 4: Search and Matching Engine
+
 - [ ] Build: `/search` — cross-chapter natural language search
   - Input: plain language query (no dropdowns)
   - On submit: call EmbeddingService.embed(query) → pgvector similarity search
@@ -114,6 +119,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 5: Standing Ask
+
 - [ ] Migration: asks table with embedding vector(1536) and HNSW index
 - [ ] Migration: matches table (append-only — no DELETE policy on this table)
 - [ ] Build: Supabase database webhook on asks INSERT/UPDATE → Edge Function
@@ -138,6 +144,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 6: Warm Introduction Flow
+
 - [ ] Migration: introductions table with all status enums
 - [ ] Build: connector selection algorithm (Server Action)
   - Priority 1: active member in same chapter as target
@@ -161,6 +168,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 7: Chapter Features
+
 - [ ] Migration: asks table visibility field (chapter|network already in schema)
 - [ ] Build: `/chapter/asks` — chapter ask board
   - All active asks from chapter members
@@ -183,6 +191,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 8: Onboarding Journey
+
 - [ ] Build: new member onboarding checklist component (shown in dashboard)
   - Step 1: Complete profile (profile_completeness > 70) ✓/✗
   - Step 2: Post your first Standing Ask ✓/✗
@@ -198,6 +207,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 9: Admin Dashboard and Chapter Health
+
 - [ ] Build: materialized view — member_engagement_scores (refresh weekly via cron)
   - Inputs: event attendances (90d), asks posted (90d), referrals logged (90d),
     introductions made or accepted (90d), profile_completeness, last_login_at recency
@@ -228,6 +238,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 10: Seed Data and Demo Prep
+
 - [ ] Generate realistic seed data using Claude (AIService):
   - 10 chapters across 3 regions (Ontario, British Columbia, Alberta)
   - 6-8 members per chapter with complete profiles
@@ -250,6 +261,7 @@ Run `npm run type-check && npm run lint` before every commit.
 ---
 
 ## Phase 11: Production Readiness
+
 - [ ] RLS audit: run `/audit-rls` skill across all tables
 - [ ] Environment variables audited — no secrets in source code, no .env files committed
 - [ ] Sentry configured for production environment (separate DSN from development)

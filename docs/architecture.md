@@ -14,6 +14,7 @@ Edge Functions triggered by database webhooks — the UI never waits for an embe
 ## Data Flow Diagrams
 
 ### Auth Flow
+
 ```
 Browser
   → /sign-in (Clerk hosted UI)
@@ -31,6 +32,7 @@ Browser
 ```
 
 ### LinkedIn Import + Profile Draft Flow
+
 ```
 Member signs in with LinkedIn (first time)
   → Clerk returns LinkedIn profile data (name, headline, summary, positions)
@@ -48,6 +50,7 @@ Member signs in with LinkedIn (first time)
 ```
 
 ### Standing Ask + Match Notification Flow
+
 ```
 Member creates Ask
   → Server Action validates input (Zod) + checks auth
@@ -74,6 +77,7 @@ Member creates Ask
 ```
 
 ### Warm Introduction Flow
+
 ```
 Member A views match and requests intro to Member B
   → Server Action: createIntroductionRequest(requester_id, target_id, ask_id, match_id, message)
@@ -101,6 +105,7 @@ Member A views match and requests intro to Member B
 ```
 
 ### Billing Flow
+
 ```
 Network Admin onboards new chapter
   → Server Action: createChapter(chapter data)
@@ -119,6 +124,7 @@ Network Admin onboards new chapter
 ## Architectural Decision Records
 
 ### ADR-001: Dedicated Deployment Per Network Customer
+
 **Date:** April 2026 | **Status:** Accepted
 **Context:** Multiple network orgs will license Needl. Each has data sovereignty concerns.
 **Decision:** Separate Supabase project + Vercel deployment per network customer.
@@ -130,6 +136,7 @@ customer count.
 when customer count exceeds 10.
 
 ### ADR-002: Async Embedding Pipeline via Edge Functions
+
 **Date:** April 2026 | **Status:** Accepted
 **Context:** Profile saves and Ask posts need vector embeddings. Embedding calls are 200-800ms.
 **Decision:** Supabase database webhooks trigger Edge Functions. UI never waits for embeddings.
@@ -139,6 +146,7 @@ when customer count exceeds 10.
 Show "updating..." in search if embedding_updated_at > 60s behind updated_at.
 
 ### ADR-003: Clerk Over Supabase Auth
+
 **Date:** April 2026 | **Status:** Accepted
 **Decision:** Clerk for auth. Google + LinkedIn OAuth.
 **Rationale:** LinkedIn profile import at onboarding is a core UX feature. Clerk's Next.js 15
@@ -146,6 +154,7 @@ integration and LinkedIn OAuth are first-class. Multi-chapter JWT claims are str
 **Consequences:** Costs money at scale. Migration path exists behind AuthService abstraction.
 
 ### ADR-004: Service Abstraction Layer
+
 **Date:** April 2026 | **Status:** Accepted
 **Decision:** All external services behind typed interfaces in src/lib/services/.
 **Rationale:** Needl is built to sell to BNI. The acquirer will have preferred vendors.
@@ -153,6 +162,7 @@ Swapping Resend for SendGrid or OpenAI for a self-hosted model should be a one-f
 **Consequences:** Slightly more boilerplate upfront. Essential for due diligence readiness.
 
 ### ADR-005: Matches Table is Append-Only
+
 **Date:** April 2026 | **Status:** Accepted
 **Decision:** No DELETE RLS policy on the matches table.
 **Rationale:** Matches is the AI engine audit trail. Regulators and acquirers will want to
@@ -160,6 +170,7 @@ see how matches were generated and what actions were taken. Immutability is a fe
 **Consequences:** Table grows indefinitely. Partition by created_at year if it exceeds 10M rows.
 
 ### ADR-006: OpenAI text-embedding-3-small Over ada-002
+
 **Date:** April 2026 | **Status:** Accepted
 **Decision:** text-embedding-3-small (1536 dimensions) for all embeddings.
 **Rationale:** Newer model, better benchmark performance, lower cost per token than ada-002.
@@ -169,6 +180,7 @@ Same 1536 dimensions, compatible with existing pgvector HNSW indexes.
 ## Infrastructure
 
 **Supabase regions:**
+
 - Canadian deployments: ca-central-1 (Montreal) — PIPEDA compliance
 - EU deployments: eu-west-1 (Ireland) — GDPR compliance
 - US deployments: us-east-1 (Virginia) — default
@@ -180,6 +192,7 @@ Environment variables set per project (never shared across customers).
 Feature branches get preview URLs automatically.
 
 **Environments per customer:**
+
 - Local: supabase start + npm run dev
 - Staging: separate Supabase project + Vercel preview
 - Production: production Supabase project + Vercel production deployment
@@ -208,11 +221,13 @@ are excluded from cross-chapter SELECT policies.
 ## Known Constraints and Scalability Ceiling
 
 This architecture comfortably handles:
+
 - Up to 500 chapters per deployment
 - Up to 12,500 members per deployment (500 × 25)
 - pgvector HNSW cosine similarity on 12,500 vectors is fast (sub-50ms)
 
 Needs re-evaluation when:
+
 - Members per deployment exceed 50,000 (HNSW index strategy changes)
 - More than 20 concurrent customer deployments (investment in Terraform automation)
 - Real-time collaborative features added (Supabase Realtime channel limits)

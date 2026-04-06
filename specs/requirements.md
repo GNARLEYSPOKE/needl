@@ -21,12 +21,12 @@ year two.
 
 ## Target Users
 
-| Persona | Job Title | Primary Goal | Pain Point |
-|---------|-----------|--------------|------------|
-| The Member | Business owner / founder, $5M–$100M revenue | Find the right service provider or referral partner anywhere in the global network | Network feels local and stale after year one |
-| The Chapter Director | Volunteer chapter lead | Keep members engaged, grow chapter, track visitor pipeline | No visibility into who is disengaging before they lapse |
-| The Network Admin | VP Member Experience / COO at CC Canada | Demonstrate ROI of platform investment, reduce churn, grow chapters | No aggregate data on member engagement across chapters |
-| The Guest / Visitor | Prospective member invited to a meeting | Understand the value of membership before joining | Friction in the invitation and RSVP process |
+| Persona              | Job Title                                   | Primary Goal                                                                       | Pain Point                                              |
+| -------------------- | ------------------------------------------- | ---------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| The Member           | Business owner / founder, $5M–$100M revenue | Find the right service provider or referral partner anywhere in the global network | Network feels local and stale after year one            |
+| The Chapter Director | Volunteer chapter lead                      | Keep members engaged, grow chapter, track visitor pipeline                         | No visibility into who is disengaging before they lapse |
+| The Network Admin    | VP Member Experience / COO at CC Canada     | Demonstrate ROI of platform investment, reduce churn, grow chapters                | No aggregate data on member engagement across chapters  |
+| The Guest / Visitor  | Prospective member invited to a meeting     | Understand the value of membership before joining                                  | Friction in the invitation and RSVP process             |
 
 ## Economic Buyers
 
@@ -97,10 +97,10 @@ per-chapter as CC rolls out nationally and then globally.
 
 ## Competitive Position
 
-| Competitor | Needl's Differentiation |
-|------------|------------------------|
-| BNI Connect | AI-powered natural language search vs. static dropdown directory |
-| CC's current platform | Standing Ask engine that works in the background vs. passive profile listing |
-| LinkedIn | Warm, vouched introductions within a trusted network vs. cold outreach |
-| Salesforce Communities | Built for member networking orgs, not adapted from CRM infrastructure |
+| Competitor               | Needl's Differentiation                                                      |
+| ------------------------ | ---------------------------------------------------------------------------- |
+| BNI Connect              | AI-powered natural language search vs. static dropdown directory             |
+| CC's current platform    | Standing Ask engine that works in the background vs. passive profile listing |
+| LinkedIn                 | Warm, vouched introductions within a trusted network vs. cold outreach       |
+| Salesforce Communities   | Built for member networking orgs, not adapted from CRM infrastructure        |
 | Manual email/text chains | Cross-chapter discovery in under 30 seconds vs. hoping someone knows someone |

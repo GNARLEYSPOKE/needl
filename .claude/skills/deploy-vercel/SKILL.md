@@ -8,6 +8,7 @@ allowed-tools: Bash(npm *) Bash(vercel *) Bash(git *) Bash(supabase *)
 Deploy $ARGUMENTS to Vercel.
 
 Pre-flight checks (abort immediately if any fail — do not proceed to deploy):
+
 1. `npm run type-check` — must pass with zero errors
 2. `npm run lint` — must pass with zero warnings
 3. `npm run build` — must build successfully, zero errors
@@ -15,10 +16,12 @@ Pre-flight checks (abort immediately if any fail — do not proceed to deploy):
 5. RLS audit: confirm chapter_memberships has both indexes, matches has no DELETE policy
 
 Deploy:
+
 - Staging: `vercel --env preview`
 - Production: `vercel --prod` — only when argument explicitly includes "production"
 
 Post-deploy:
+
 - Confirm deployment URL is live (HTTP 200 on /)
 - Smoke test: /sign-in loads, /search loads
 - Confirm Sentry is receiving events (check Sentry dashboard for the deployment)

@@ -14,51 +14,51 @@
 
 ```typescript
 // src/lib/actions/[feature].ts
-'use server'
+'use server';
 
-import { auth } from '@clerk/nextjs/server'
-import { z } from 'zod'
-import { createClient } from '@/lib/supabase/server'
+import { auth } from '@clerk/nextjs/server';
+import { z } from 'zod';
+import { createClient } from '@/lib/supabase/server';
 
 const CreateAskSchema = z.object({
   body: z.string().min(20).max(500),
   visibility: z.enum(['chapter', 'network']),
-})
+});
 
 export async function createAsk(
-  input: z.infer<typeof CreateAskSchema>
+  input: z.infer<typeof CreateAskSchema>,
 ): Promise<{ data: { id: string } | null; error: string | null }> {
   // 1. Validate session
-  const { userId, sessionClaims } = await auth()
-  if (!userId) return { data: null, error: 'Unauthorized' }
+  const { userId, sessionClaims } = await auth();
+  if (!userId) return { data: null, error: 'Unauthorized' };
 
   // 2. Validate input
-  const parsed = CreateAskSchema.safeParse(input)
-  if (!parsed.success) return { data: null, error: parsed.error.message }
+  const parsed = CreateAskSchema.safeParse(input);
+  if (!parsed.success) return { data: null, error: parsed.error.message };
 
   // 3. Check authorization (role if needed)
-  const organizationId = sessionClaims?.organization_id as string
+  const organizationId = sessionClaims?.organization_id as string;
 
   // 4. Execute
-  const supabase = await createClient()
+  const supabase = await createClient();
   const { data, error } = await supabase
     .from('asks')
     .insert({ ...parsed.data, member_id: userId, organization_id: organizationId })
     .select('id')
-    .single()
+    .single();
 
-  if (error) return { data: null, error: error.message }
-  return { data: { id: data.id }, error: null }
+  if (error) return { data: null, error: error.message };
+  return { data: { id: data.id }, error: null };
 }
 ```
 
 ## Webhook Endpoints
 
-| Route | Provider | Events Handled |
-|-------|----------|----------------|
-| /api/webhooks/clerk | Clerk | user.created, user.updated — member upsert |
-| /api/webhooks/stripe | Stripe | invoice.paid, invoice.payment_failed, customer.subscription.deleted |
-| /api/invitations/[token] | None (public) | Visitor RSVP — no auth required |
+| Route                    | Provider      | Events Handled                                                      |
+| ------------------------ | ------------- | ------------------------------------------------------------------- |
+| /api/webhooks/clerk      | Clerk         | user.created, user.updated — member upsert                          |
+| /api/webhooks/stripe     | Stripe        | invoice.paid, invoice.payment_failed, customer.subscription.deleted |
+| /api/invitations/[token] | None (public) | Visitor RSVP — no auth required                                     |
 
 ### Clerk Webhook Handler
 
@@ -190,6 +190,7 @@ Edge Functions are not Server Actions — they are triggered by database webhook
 They use the service_role key and are not callable from the browser.
 
 ### embed-profile (triggers on member_profiles INSERT or UPDATE)
+
 ```typescript
 // Input: member_id from webhook payload
 // Process: fetch profile text fields, call EmbeddingService.embed(), write back embedding
@@ -198,6 +199,7 @@ They use the service_role key and are not callable from the browser.
 ```
 
 ### embed-ask (triggers on asks INSERT or UPDATE)
+
 ```typescript
 // Input: ask_id from webhook payload
 // Process: embed ask body, run similarity search, insert top 3 matches, notify asker
@@ -205,6 +207,7 @@ They use the service_role key and are not callable from the browser.
 ```
 
 ### score-engagement (cron — runs weekly Sunday midnight)
+
 ```typescript
 // Process: compute engagement_score for all active members
 // Refresh: member_engagement_scores materialized view
@@ -212,6 +215,7 @@ They use the service_role key and are not callable from the browser.
 ```
 
 ### nudge-stale-asks (cron — runs daily 9am)
+
 ```typescript
 // Query: active asks with created_at > 30 days ago AND zero matches
 // Process: AIService.generateAskNudge(ask) for each
@@ -219,6 +223,7 @@ They use the service_role key and are not callable from the browser.
 ```
 
 ### nudge-onboarding (cron — runs daily 10am)
+
 ```typescript
 // Query: members WHERE onboarding_completed_at IS NULL
 //        AND created_at < now() - interval '7 days'

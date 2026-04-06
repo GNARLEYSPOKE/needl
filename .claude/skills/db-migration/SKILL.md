@@ -8,6 +8,7 @@ allowed-tools: Bash(supabase *) Read Write
 Generate a safe Supabase migration for: $ARGUMENTS
 
 Steps:
+
 1. Read existing migrations in supabase/migrations/ to understand current schema state
 2. Read ECOSYSTEM.md to confirm the target entity definition and relationships
 3. Plan the migration — include in the plan:
@@ -29,6 +30,7 @@ Steps:
 11. Confirm src/types/database.ts was updated
 
 Needl-specific safety rules:
+
 - chapter_memberships indexes (chapter_id, status) and (member_id, status) must never be removed
 - matches table must never have a DELETE policy added
 - Every new table needs organization_id NOT NULL REFERENCES organizations(id)
