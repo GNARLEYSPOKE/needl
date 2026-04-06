@@ -33,14 +33,14 @@ ALTER TABLE members ADD COLUMN IF NOT EXISTS clerk_user_id text UNIQUE;
 
 -- Save Clerk IDs to clerk_user_id
 UPDATE members SET clerk_user_id = id
-  WHERE id !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
+  WHERE id::text !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$'
   AND clerk_user_id IS NULL;
 
 -- Create temp mapping: old text id → new uuid
 CREATE TEMP TABLE _member_id_map AS
   SELECT id AS old_id, gen_random_uuid() AS new_id
   FROM members
-  WHERE id !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
+  WHERE id::text !~ '^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$';
 
 -- Update FK references in all dependent tables
 UPDATE chapter_memberships SET member_id = m.new_id::text
