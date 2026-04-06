@@ -50,6 +50,7 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
   const [step, setStep] = useState(0);
   const [isPending, startTransition] = useTransition();
   const [clientInput, setClientInput] = useState('');
+  const [stepErrors, setStepErrors] = useState<Record<string, string>>({});
 
   const form = useForm<FullProfileInput>({
     defaultValues: {
@@ -66,7 +67,7 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
     },
   });
 
-  const { register, watch, setValue, formState } = form;
+  const { register, watch, setValue } = form;
   const values = watch();
   const progress = ((step + 1) / STEPS.length) * 100;
 
@@ -85,23 +86,29 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
 
     const result = schema.safeParse(values);
     if (!result.success) {
-      const firstError = result.error.issues[0];
-      if (firstError) {
-        const field = firstError.path[0] as string;
-        form.setError(field as keyof FullProfileInput, { message: firstError.message });
+      const errors: Record<string, string> = {};
+      for (const issue of result.error.issues) {
+        const field = String(issue.path[0]);
+        if (!errors[field]) {
+          errors[field] = issue.message;
+        }
       }
+      setStepErrors(errors);
       return false;
     }
+    setStepErrors({});
     return true;
   }
 
   function handleNext(): void {
     if (validateCurrentStep()) {
+      setStepErrors({});
       setStep((s) => Math.min(s + 1, STEPS.length - 1));
     }
   }
 
   function handleBack(): void {
+    setStepErrors({});
     setStep((s) => Math.max(s - 1, 0));
   }
 
@@ -168,10 +175,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
             <div>
               <Label htmlFor="company_name">Company Name</Label>
               <Input id="company_name" {...register('company_name')} />
-              {formState.errors.company_name && (
-                <p className="text-destructive mt-1 text-sm">
-                  {formState.errors.company_name.message}
-                </p>
+              {stepErrors.company_name && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.company_name}</p>
               )}
             </div>
             <div>
@@ -185,8 +190,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 placeholder="One sentence that captures what you do"
                 {...register('tagline')}
               />
-              {formState.errors.tagline && (
-                <p className="text-destructive mt-1 text-sm">{formState.errors.tagline.message}</p>
+              {stepErrors.tagline && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.tagline}</p>
               )}
             </div>
             <div>
@@ -197,10 +202,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 rows={3}
                 {...register('what_i_do')}
               />
-              {formState.errors.what_i_do && (
-                <p className="text-destructive mt-1 text-sm">
-                  {formState.errors.what_i_do.message}
-                </p>
+              {stepErrors.what_i_do && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.what_i_do}</p>
               )}
             </div>
           </CardContent>
@@ -222,10 +225,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 rows={3}
                 {...register('who_i_serve')}
               />
-              {formState.errors.who_i_serve && (
-                <p className="text-destructive mt-1 text-sm">
-                  {formState.errors.who_i_serve.message}
-                </p>
+              {stepErrors.who_i_serve && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.who_i_serve}</p>
               )}
             </div>
             <div>
@@ -236,10 +237,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 rows={3}
                 {...register('results_i_deliver')}
               />
-              {formState.errors.results_i_deliver && (
-                <p className="text-destructive mt-1 text-sm">
-                  {formState.errors.results_i_deliver.message}
-                </p>
+              {stepErrors.results_i_deliver && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.results_i_deliver}</p>
               )}
             </div>
           </CardContent>
@@ -271,10 +270,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                   Add
                 </Button>
               </div>
-              {formState.errors.clients_served && (
-                <p className="text-destructive mt-1 text-sm">
-                  {formState.errors.clients_served.message}
-                </p>
+              {stepErrors.clients_served && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.clients_served}</p>
               )}
             </div>
             <div className="flex flex-wrap gap-2">
@@ -313,10 +310,8 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 </Button>
               ))}
             </div>
-            {formState.errors.geography_served && (
-              <p className="text-destructive mt-1 text-sm">
-                {formState.errors.geography_served.message}
-              </p>
+            {stepErrors.geography_served && (
+              <p className="text-destructive mt-1 text-sm">{stepErrors.geography_served}</p>
             )}
           </CardContent>
         </Card>
@@ -366,9 +361,7 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
                 rows={6}
                 {...register('bio')}
               />
-              {formState.errors.bio && (
-                <p className="text-destructive mt-1 text-sm">{formState.errors.bio.message}</p>
-              )}
+              {stepErrors.bio && <p className="text-destructive mt-1 text-sm">{stepErrors.bio}</p>}
             </div>
             <div className="rounded-lg border p-4">
               <h3 className="font-medium">{values.company_name}</h3>
