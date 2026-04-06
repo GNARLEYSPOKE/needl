@@ -17,6 +17,9 @@ export type { EmbeddingResult } from './embedding';
 export type { ProfileDraftParams, ProfileDraft, MatchReasonParams, AskNudgeParams } from './ai';
 export type { CreateSubscriptionParams } from './billing';
 export type { UploadParams } from './storage';
+
+// Adapter factories (continued)
+export { createSupabaseStorageService } from './storage';
 export type { PushNotifyParams, PushSubscribeParams } from './push';
 
 // Adapter factories
