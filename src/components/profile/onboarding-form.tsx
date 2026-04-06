@@ -182,6 +182,9 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
             <div>
               <Label htmlFor="company_url">Website (optional)</Label>
               <Input id="company_url" placeholder="https://" {...register('company_url')} />
+              {stepErrors.company_url && (
+                <p className="text-destructive mt-1 text-sm">{stepErrors.company_url}</p>
+              )}
             </div>
             <div>
               <Label htmlFor="tagline">Tagline</Label>

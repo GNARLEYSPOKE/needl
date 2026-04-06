@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 export const ProfileBasicsSchema = z.object({
   company_name: z.string().min(2, 'Company name is required'),
-  company_url: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  company_url: z.string().optional(),
   tagline: z.string().min(10, 'Tagline must be at least 10 characters'),
   what_i_do: z.string().min(20, 'Describe what you do in at least 20 characters'),
 });
