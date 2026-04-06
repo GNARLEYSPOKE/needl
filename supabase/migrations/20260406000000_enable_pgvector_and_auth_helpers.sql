@@ -24,10 +24,12 @@ CREATE OR REPLACE FUNCTION public.get_chapter_ids() RETURNS uuid[] AS $$
   );
 $$ LANGUAGE sql STABLE;
 
--- Extract role from Clerk JWT claims
+-- Extract app-level role from Clerk JWT claims
+-- The JWT "role" claim is reserved for Supabase/PostgREST ("authenticated").
+-- The app-level role (network_admin, member, etc.) is in "user_role".
 CREATE OR REPLACE FUNCTION public.get_role() RETURNS text AS $$
   SELECT COALESCE(
-    current_setting('request.jwt.claims', true)::json ->> 'role',
+    current_setting('request.jwt.claims', true)::json ->> 'user_role',
     'member'
   );
 $$ LANGUAGE sql STABLE;
