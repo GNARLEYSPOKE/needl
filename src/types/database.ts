@@ -540,6 +540,165 @@ export interface Database {
         };
         Relationships: [];
       };
+      events: {
+        Row: {
+          id: string;
+          chapter_id: string;
+          title: string;
+          format: Database['public']['Enums']['meeting_format'];
+          location: string | null;
+          scheduled_at: string;
+          duration_minutes: number;
+          created_by_member_id: string;
+          is_cancelled: boolean;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          chapter_id: string;
+          title: string;
+          format?: Database['public']['Enums']['meeting_format'];
+          location?: string | null;
+          scheduled_at: string;
+          duration_minutes?: number;
+          created_by_member_id: string;
+          is_cancelled?: boolean;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          chapter_id?: string;
+          title?: string;
+          format?: Database['public']['Enums']['meeting_format'];
+          location?: string | null;
+          scheduled_at?: string;
+          duration_minutes?: number;
+          created_by_member_id?: string;
+          is_cancelled?: boolean;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      visitor_invitations: {
+        Row: {
+          id: string;
+          event_id: string;
+          inviting_member_id: string;
+          visitor_name: string;
+          visitor_email: string;
+          visitor_company: string | null;
+          visitor_role: string | null;
+          invite_sent_at: string | null;
+          rsvp_status: Database['public']['Enums']['rsvp_status'];
+          attended: boolean;
+          follow_up_status: Database['public']['Enums']['follow_up_status'];
+          invite_token: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          inviting_member_id: string;
+          visitor_name: string;
+          visitor_email: string;
+          visitor_company?: string | null;
+          visitor_role?: string | null;
+          invite_sent_at?: string | null;
+          rsvp_status?: Database['public']['Enums']['rsvp_status'];
+          attended?: boolean;
+          follow_up_status?: Database['public']['Enums']['follow_up_status'];
+          invite_token?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          inviting_member_id?: string;
+          visitor_name?: string;
+          visitor_email?: string;
+          visitor_company?: string | null;
+          visitor_role?: string | null;
+          invite_sent_at?: string | null;
+          rsvp_status?: Database['public']['Enums']['rsvp_status'];
+          attended?: boolean;
+          follow_up_status?: Database['public']['Enums']['follow_up_status'];
+          invite_token?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      event_attendances: {
+        Row: {
+          id: string;
+          event_id: string;
+          member_id: string;
+          attended: boolean;
+          substitute_member_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          member_id: string;
+          attended?: boolean;
+          substitute_member_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          member_id?: string;
+          attended?: boolean;
+          substitute_member_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      referrals: {
+        Row: {
+          id: string;
+          organization_id: string;
+          referring_member_id: string;
+          receiving_member_id: string;
+          referred_contact_name: string;
+          referred_contact_email: string | null;
+          notes: string | null;
+          estimated_value: number | null;
+          currency: string;
+          status: Database['public']['Enums']['referral_status'];
+          closed_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          organization_id: string;
+          referring_member_id: string;
+          receiving_member_id: string;
+          referred_contact_name: string;
+          referred_contact_email?: string | null;
+          notes?: string | null;
+          estimated_value?: number | null;
+          currency?: string;
+          status?: Database['public']['Enums']['referral_status'];
+          closed_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          organization_id?: string;
+          referring_member_id?: string;
+          receiving_member_id?: string;
+          referred_contact_name?: string;
+          referred_contact_email?: string | null;
+          notes?: string | null;
+          estimated_value?: number | null;
+          currency?: string;
+          status?: Database['public']['Enums']['referral_status'];
+          closed_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -602,6 +761,9 @@ export interface Database {
         | 'completed'
         | 'declined'
         | 'expired';
+      rsvp_status: 'pending' | 'confirmed' | 'declined';
+      follow_up_status: 'none' | 'contacted' | 'applied' | 'joined';
+      referral_status: 'passed' | 'closed' | 'lost';
     };
     CompositeTypes: Record<string, never>;
   };
