@@ -10,8 +10,12 @@ ALTER TABLE members ADD COLUMN IF NOT EXISTS clerk_user_id text UNIQUE;
 ALTER TABLE members ALTER COLUMN id SET DEFAULT gen_random_uuid();
 
 -- Helper function: resolve Clerk user ID → member UUID for RLS policies
+-- auth.uid() casts to uuid which fails for Clerk IDs like "user_xxx".
+-- Read the sub claim directly as text instead.
 CREATE OR REPLACE FUNCTION public.get_member_id() RETURNS uuid AS $$
-  SELECT id FROM members WHERE clerk_user_id = auth.uid()::text LIMIT 1;
+  SELECT id FROM members
+  WHERE clerk_user_id = (current_setting('request.jwt.claims', true)::json ->> 'sub')
+  LIMIT 1;
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- Update RLS policies to use get_member_id() instead of auth.uid()
