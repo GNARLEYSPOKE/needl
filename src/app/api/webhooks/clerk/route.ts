@@ -38,11 +38,19 @@ export async function POST(req: Request): Promise<Response> {
   if (event.type === 'user.created') {
     const { id, email_addresses, first_name, last_name, image_url, external_accounts } = event.data;
 
+    // Skip if member already exists
+    const { data: existing } = await supabase.from('members').select('id').eq('id', id).single();
+
+    if (existing) {
+      return new Response('OK', { status: 200 });
+    }
+
     const primaryEmail = email_addresses.find((e) => e.id === event.data.primary_email_address_id);
     const linkedInAccount = external_accounts?.find((a) => a.provider === 'oauth_linkedin_oidc');
     const fullName = [first_name, last_name].filter(Boolean).join(' ') || 'New Member';
+    const email = primaryEmail?.email_address ?? `${id}@placeholder.needl.app`;
 
-    // Look up the organization for this deployment
+    // Look up the organization for this deployment (single-tenant)
     const { data: org } = await supabase.from('organizations').select('id').limit(1).single();
 
     if (!org) {
@@ -50,23 +58,20 @@ export async function POST(req: Request): Promise<Response> {
       return new Response('OK', { status: 200 });
     }
 
-    const { error } = await supabase.from('members').upsert(
-      {
-        id,
-        organization_id: org.id,
-        email: primaryEmail?.email_address ?? '',
-        full_name: fullName,
-        avatar_url: image_url ?? null,
-        linkedin_url: linkedInAccount?.public_metadata?.profile_url
-          ? String(linkedInAccount.public_metadata.profile_url)
-          : null,
-        data_residency: 'CA', // Default for CC Canada deployment
-      },
-      { onConflict: 'id' },
-    );
+    const { error } = await supabase.from('members').insert({
+      id,
+      organization_id: org.id,
+      email,
+      full_name: fullName,
+      avatar_url: image_url ?? null,
+      linkedin_url: linkedInAccount?.public_metadata?.profile_url
+        ? String(linkedInAccount.public_metadata.profile_url)
+        : null,
+      data_residency: 'CA',
+    });
 
     if (error) {
-      console.error('Failed to upsert member:', error.message);
+      console.error('Failed to insert member:', error.message);
     }
   }
 
@@ -79,7 +84,7 @@ export async function POST(req: Request): Promise<Response> {
     const { error } = await supabase
       .from('members')
       .update({
-        email: primaryEmail?.email_address ?? '',
+        email: primaryEmail?.email_address ?? undefined,
         full_name: fullName,
         avatar_url: image_url ?? null,
       })

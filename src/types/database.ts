@@ -138,7 +138,7 @@ export interface Database {
           chapter_id: string;
           member_id: string;
           role: Database['public']['Enums']['member_role'];
-          profession_category: string;
+          profession_category: string | null;
           status: Database['public']['Enums']['membership_status'];
           joined_at: string;
           expires_at: string;
@@ -153,7 +153,7 @@ export interface Database {
           chapter_id: string;
           member_id: string;
           role?: Database['public']['Enums']['member_role'];
-          profession_category: string;
+          profession_category?: string | null;
           status?: Database['public']['Enums']['membership_status'];
           joined_at?: string;
           expires_at: string;
