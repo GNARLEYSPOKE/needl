@@ -429,6 +429,28 @@ export interface Database {
         Args: Record<string, never>;
         Returns: string;
       };
+      get_member_id: {
+        Args: Record<string, never>;
+        Returns: string;
+      };
+      search_members: {
+        Args: {
+          query_embedding: string;
+          search_org_id: string;
+          exclude_chapter_ids: string[];
+          geo_filter?: string[] | null;
+          match_limit?: number;
+        };
+        Returns: {
+          member_id: string;
+          company_name: string;
+          tagline: string;
+          what_i_do: string;
+          who_i_serve: string;
+          geography_served: string[];
+          match_score: number;
+        }[];
+      };
     };
     Enums: {
       meeting_format: 'in_person' | 'virtual' | 'hybrid';
