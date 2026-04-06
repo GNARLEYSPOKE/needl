@@ -52,7 +52,7 @@ CREATE POLICY "Read visible testimonials in own org"
     EXISTS (
       SELECT 1 FROM members m
       WHERE m.id = testimonials.author_member_id
-        AND m.organization_id = auth.organization_id()
+        AND m.organization_id = public.get_organization_id()
     )
     AND (is_visible = true OR recipient_member_id = auth.uid())
   );

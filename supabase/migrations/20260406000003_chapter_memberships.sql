@@ -87,23 +87,23 @@ CREATE POLICY "Read own or chapter memberships"
   ON chapter_memberships FOR SELECT
   USING (
     member_id = auth.uid()
-    OR chapter_id = ANY(auth.chapter_ids())
+    OR chapter_id = ANY(public.get_chapter_ids())
   );
 
 -- Directors and admins can insert memberships for their chapters
 CREATE POLICY "Director or admin inserts memberships"
   ON chapter_memberships FOR INSERT
   WITH CHECK (
-    chapter_id = ANY(auth.chapter_ids())
-    AND auth.role() IN ('network_admin', 'super_admin', 'chapter_director')
+    chapter_id = ANY(public.get_chapter_ids())
+    AND public.get_role() IN ('network_admin', 'super_admin', 'chapter_director')
   );
 
 -- Directors and admins can update memberships in their chapters
 CREATE POLICY "Director or admin updates memberships"
   ON chapter_memberships FOR UPDATE
   USING (
-    chapter_id = ANY(auth.chapter_ids())
-    AND auth.role() IN ('network_admin', 'super_admin', 'chapter_director')
+    chapter_id = ANY(public.get_chapter_ids())
+    AND public.get_role() IN ('network_admin', 'super_admin', 'chapter_director')
   );
 
 -- No hard delete — use soft delete via deleted_at UPDATE

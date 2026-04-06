@@ -23,22 +23,22 @@ ALTER TABLE chapters ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Select chapters in own org"
   ON chapters FOR SELECT
-  USING (organization_id = auth.organization_id());
+  USING (organization_id = public.get_organization_id());
 
 CREATE POLICY "Admin inserts chapters"
   ON chapters FOR INSERT
   WITH CHECK (
-    organization_id = auth.organization_id()
-    AND auth.role() IN ('network_admin', 'super_admin')
+    organization_id = public.get_organization_id()
+    AND public.get_role() IN ('network_admin', 'super_admin')
   );
 
 CREATE POLICY "Admin or director updates chapters"
   ON chapters FOR UPDATE
   USING (
-    organization_id = auth.organization_id()
+    organization_id = public.get_organization_id()
     AND (
-      auth.role() IN ('network_admin', 'super_admin')
-      OR (auth.role() = 'chapter_director' AND id = ANY(auth.chapter_ids()))
+      public.get_role() IN ('network_admin', 'super_admin')
+      OR (public.get_role() = 'chapter_director' AND id = ANY(public.get_chapter_ids()))
     )
   );
 

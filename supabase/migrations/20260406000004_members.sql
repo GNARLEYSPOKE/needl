@@ -55,7 +55,7 @@ ALTER TABLE members ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Select members in own org"
   ON members FOR SELECT
-  USING (organization_id = auth.organization_id());
+  USING (organization_id = public.get_organization_id());
 
 -- INSERT only via Clerk webhook (service_role bypasses RLS)
 CREATE POLICY "No direct insert"
@@ -66,10 +66,10 @@ CREATE POLICY "No direct insert"
 CREATE POLICY "Update own record or admin"
   ON members FOR UPDATE
   USING (
-    organization_id = auth.organization_id()
+    organization_id = public.get_organization_id()
     AND (
       id = auth.uid()
-      OR auth.role() IN ('network_admin', 'super_admin')
+      OR public.get_role() IN ('network_admin', 'super_admin')
     )
   );
 

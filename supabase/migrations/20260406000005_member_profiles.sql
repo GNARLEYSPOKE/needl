@@ -55,7 +55,7 @@ CREATE POLICY "Select profiles in own org"
     EXISTS (
       SELECT 1 FROM members m
       WHERE m.id = member_profiles.member_id
-        AND m.organization_id = auth.organization_id()
+        AND m.organization_id = public.get_organization_id()
     )
   );
 

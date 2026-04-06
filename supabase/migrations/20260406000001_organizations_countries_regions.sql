@@ -19,7 +19,7 @@ ALTER TABLE organizations ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Select own organization"
   ON organizations FOR SELECT
-  USING (id = auth.organization_id());
+  USING (id = public.get_organization_id());
 
 CREATE POLICY "No direct insert"
   ON organizations FOR INSERT
@@ -27,7 +27,7 @@ CREATE POLICY "No direct insert"
 
 CREATE POLICY "Network admin updates organization"
   ON organizations FOR UPDATE
-  USING (id = auth.organization_id() AND auth.role() IN ('network_admin', 'super_admin'));
+  USING (id = public.get_organization_id() AND public.get_role() IN ('network_admin', 'super_admin'));
 
 CREATE POLICY "No delete"
   ON organizations FOR DELETE
@@ -52,7 +52,7 @@ ALTER TABLE countries ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Select countries in own org"
   ON countries FOR SELECT
-  USING (organization_id = auth.organization_id());
+  USING (organization_id = public.get_organization_id());
 
 CREATE POLICY "No direct insert"
   ON countries FOR INSERT
@@ -60,7 +60,7 @@ CREATE POLICY "No direct insert"
 
 CREATE POLICY "Network admin updates countries"
   ON countries FOR UPDATE
-  USING (organization_id = auth.organization_id() AND auth.role() IN ('network_admin', 'super_admin'));
+  USING (organization_id = public.get_organization_id() AND public.get_role() IN ('network_admin', 'super_admin'));
 
 CREATE POLICY "No delete"
   ON countries FOR DELETE
@@ -88,7 +88,7 @@ CREATE POLICY "Select regions in own org"
     EXISTS (
       SELECT 1 FROM countries c
       WHERE c.id = regions.country_id
-        AND c.organization_id = auth.organization_id()
+        AND c.organization_id = public.get_organization_id()
     )
   );
 
@@ -102,9 +102,9 @@ CREATE POLICY "Network admin updates regions"
     EXISTS (
       SELECT 1 FROM countries c
       WHERE c.id = regions.country_id
-        AND c.organization_id = auth.organization_id()
+        AND c.organization_id = public.get_organization_id()
     )
-    AND auth.role() IN ('network_admin', 'super_admin')
+    AND public.get_role() IN ('network_admin', 'super_admin')
   );
 
 CREATE POLICY "No delete"
