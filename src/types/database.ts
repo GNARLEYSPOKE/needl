@@ -414,6 +414,84 @@ export interface Database {
         };
         Relationships: [];
       };
+      asks: {
+        Row: {
+          id: string;
+          member_id: string;
+          body: string;
+          visibility: Database['public']['Enums']['ask_visibility'];
+          geography_filter: string[];
+          status: Database['public']['Enums']['ask_status'];
+          embedding: string | null;
+          fulfilled_by_member_id: string | null;
+          fulfilled_at: string | null;
+          expires_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          member_id: string;
+          body: string;
+          visibility?: Database['public']['Enums']['ask_visibility'];
+          geography_filter?: string[];
+          status?: Database['public']['Enums']['ask_status'];
+          embedding?: string | null;
+          fulfilled_by_member_id?: string | null;
+          fulfilled_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          member_id?: string;
+          body?: string;
+          visibility?: Database['public']['Enums']['ask_visibility'];
+          geography_filter?: string[];
+          status?: Database['public']['Enums']['ask_status'];
+          embedding?: string | null;
+          fulfilled_by_member_id?: string | null;
+          fulfilled_at?: string | null;
+          expires_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      matches: {
+        Row: {
+          id: string;
+          ask_id: string;
+          matched_member_id: string;
+          match_score: number;
+          match_reason: string;
+          notified_at: string | null;
+          asker_action: Database['public']['Enums']['asker_action'];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          ask_id: string;
+          matched_member_id: string;
+          match_score: number;
+          match_reason: string;
+          notified_at?: string | null;
+          asker_action?: Database['public']['Enums']['asker_action'];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          ask_id?: string;
+          matched_member_id?: string;
+          match_score?: number;
+          match_reason?: string;
+          notified_at?: string | null;
+          asker_action?: Database['public']['Enums']['asker_action'];
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -464,6 +542,9 @@ export interface Database {
       email_digest_frequency: 'daily' | 'weekly' | 'never';
       forum_role: 'member' | 'facilitator';
       forum_membership_status: 'active' | 'inactive';
+      ask_visibility: 'chapter' | 'network';
+      ask_status: 'active' | 'fulfilled' | 'paused' | 'expired';
+      asker_action: 'pending' | 'intro_requested' | 'dismissed' | 'connected';
     };
     CompositeTypes: Record<string, never>;
   };
