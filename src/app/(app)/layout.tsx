@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { createServiceClient } from '@/lib/supabase/admin';
+import { headers } from 'next/headers';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function AppLayout({ children }: { children: React.ReactNode }) {
   const { userId } = await auth();
@@ -9,19 +10,21 @@ export default async function AppLayout({ children }: { children: React.ReactNod
     redirect('/sign-in');
   }
 
-  // Check if member has any active chapter memberships
-  const supabase = createServiceClient();
+  const supabase = await createClient();
   const { data: member } = await supabase
     .from('members')
     .select('onboarding_completed_at')
     .eq('id', userId)
     .single();
 
-  // Member doesn't exist yet (webhook may not have fired) — let them through
-  // Onboarding not completed — redirect (unless already on onboarding page)
+  // If member exists but hasn't completed onboarding, redirect to onboarding
+  // (unless they're already on the onboarding page)
   if (member && !member.onboarding_completed_at) {
-    // We can't check the current path in a layout easily,
-    // so the onboarding page itself will handle its own logic
+    const headerList = await headers();
+    const pathname = headerList.get('x-next-pathname') ?? '';
+    if (!pathname.startsWith('/onboarding')) {
+      redirect('/onboarding');
+    }
   }
 
   return <div className="flex min-h-screen flex-col">{children}</div>;

@@ -84,16 +84,18 @@ export function ProfileCard({ profile, member, isSummary }: ProfileCardProps) {
           </div>
         )}
 
-        <div>
-          <h3 className="text-sm font-medium">Geography Served</h3>
-          <div className="mt-1 flex flex-wrap gap-1">
-            {profile.geography_served.map((geo) => (
-              <Badge key={geo} variant="outline" className="text-xs">
-                {geo}
-              </Badge>
-            ))}
+        {profile.geography_served.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium">Geography Served</h3>
+            <div className="mt-1 flex flex-wrap gap-1">
+              {profile.geography_served.map((geo) => (
+                <Badge key={geo} variant="outline" className="text-xs">
+                  {geo}
+                </Badge>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );

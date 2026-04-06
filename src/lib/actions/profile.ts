@@ -2,7 +2,6 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
-import { createServiceClient } from '@/lib/supabase/admin';
 import { createAnthropicAIService } from '@/lib/services/ai';
 import { FullProfileSchema } from '@/lib/validations/profile';
 import type { ProfileDraft, ProfileDraftParams } from '@/lib/services/ai';
@@ -97,8 +96,8 @@ export async function completeOnboarding(
   const result = await saveProfile(input);
   if (result.error) return result;
 
-  // Mark onboarding as completed
-  const supabase = createServiceClient();
+  // Mark onboarding as completed (uses authenticated client — members UPDATE allows own record)
+  const supabase = await createClient();
   const { error } = await supabase
     .from('members')
     .update({ onboarding_completed_at: new Date().toISOString() })

@@ -1,12 +1,12 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
-import { createServiceClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
 
-  const supabase = createServiceClient();
+  const supabase = await createClient();
   const { data: member } = await supabase
     .from('members')
     .select('full_name, onboarding_completed_at')

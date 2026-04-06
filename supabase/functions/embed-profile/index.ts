@@ -12,39 +12,60 @@ const OPENAI_API_URL = 'https://api.openai.com/v1/embeddings';
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 const EMBEDDING_DIMENSIONS = 1536;
 
+interface ProfileRecord {
+  id: string;
+  member_id: string;
+  tagline: string;
+  bio: string;
+  what_i_do: string;
+  who_i_serve: string;
+  results_i_deliver: string;
+  clients_served: string[];
+  embedding: string | null;
+  embedding_updated_at: string | null;
+}
+
 interface WebhookPayload {
   type: 'INSERT' | 'UPDATE';
   table: string;
-  record: {
-    id: string;
-    member_id: string;
-    tagline: string;
-    bio: string;
-    what_i_do: string;
-    who_i_serve: string;
-    results_i_deliver: string;
-    clients_served: string[];
-  };
+  record: ProfileRecord;
+  old_record: ProfileRecord | null;
+}
+
+// Fields that compose the embedding document
+function embeddingText(r: ProfileRecord): string {
+  return [
+    r.tagline,
+    r.bio,
+    r.what_i_do,
+    r.who_i_serve,
+    r.results_i_deliver,
+    (r.clients_served || []).join(', '),
+  ]
+    .filter(Boolean)
+    .join('\n');
 }
 
 Deno.serve(async (req: Request) => {
   try {
     const payload: WebhookPayload = await req.json();
-    const { record } = payload;
+    const { record, old_record } = payload;
+
+    // Guard: skip if this UPDATE only changed embedding fields (prevents infinite loop)
+    if (payload.type === 'UPDATE' && old_record) {
+      const oldText = embeddingText(old_record);
+      const newText = embeddingText(record);
+      if (oldText === newText) {
+        return new Response(JSON.stringify({ message: 'Text unchanged, skipping' }), {
+          status: 200,
+        });
+      }
+    }
 
     // Compose embedding document per ECOSYSTEM.md spec
-    const embeddingText = [
-      record.tagline,
-      record.bio,
-      record.what_i_do,
-      record.who_i_serve,
-      record.results_i_deliver,
-      (record.clients_served || []).join(', '),
-    ]
-      .filter(Boolean)
-      .join('\n');
+    const textToEmbed = embeddingText(record);
 
-    if (!embeddingText.trim()) {
+    if (!textToEmbed.trim()) {
       return new Response(JSON.stringify({ message: 'No text to embed' }), { status: 200 });
     }
 
@@ -62,7 +83,7 @@ Deno.serve(async (req: Request) => {
       },
       body: JSON.stringify({
         model: EMBEDDING_MODEL,
-        input: embeddingText,
+        input: textToEmbed,
         dimensions: EMBEDDING_DIMENSIONS,
       }),
     });

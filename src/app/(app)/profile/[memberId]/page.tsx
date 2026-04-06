@@ -1,7 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getProfile } from '@/lib/actions/profile';
-import { createServiceClient } from '@/lib/supabase/admin';
+import { createClient } from '@/lib/supabase/server';
 import { ProfileCard } from '@/components/profile/profile-card';
 
 interface ProfilePageProps {
@@ -23,8 +23,8 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
     );
   }
 
-  // Fetch member info for display
-  const supabase = createServiceClient();
+  // Fetch member info via RLS-scoped client
+  const supabase = await createClient();
   const { data: member } = await supabase
     .from('members')
     .select('full_name, avatar_url')
