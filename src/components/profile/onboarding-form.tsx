@@ -143,13 +143,18 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
     if (!validateCurrentStep()) return;
 
     startTransition(async () => {
-      const result = await completeOnboarding(values);
-      if (result.error) {
-        toast.error(result.error);
-        return;
+      try {
+        const result = await completeOnboarding(values);
+        if (result.error) {
+          toast.error(result.error);
+          return;
+        }
+        toast.success('Profile published!');
+        router.push('/dashboard');
+      } catch (err) {
+        const message = err instanceof Error ? err.message : 'Failed to publish profile';
+        toast.error(message);
       }
-      toast.success('Profile published!');
-      router.push('/dashboard');
     });
   }
 
