@@ -94,7 +94,7 @@ ALTER TABLE forum_memberships ALTER COLUMN member_id TYPE uuid USING member_id::
 -- ============================================================================
 
 CREATE OR REPLACE FUNCTION public.get_member_id() RETURNS uuid AS $$
-  SELECT id FROM members WHERE clerk_user_id = auth.uid() LIMIT 1;
+  SELECT id FROM members WHERE clerk_user_id = auth.uid()::text LIMIT 1;
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- ============================================================================
