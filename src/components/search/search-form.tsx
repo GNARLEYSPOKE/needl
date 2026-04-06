@@ -21,8 +21,8 @@ export function SearchForm() {
   const [isPending, startTransition] = useTransition();
 
   function handleSearch(): void {
-    if (query.length < 10) {
-      toast.error('Describe what you need in at least 10 characters');
+    if (query.length < 3) {
+      toast.error('Enter at least 3 characters');
       return;
     }
 
