@@ -62,7 +62,7 @@ VALUES (
 
 INSERT INTO members (id, organization_id, email, full_name, data_residency, is_active)
 VALUES (
-  'e0000000-0000-0000-0000-000000000001',
+  'user_test_jane_smith_001',
   'a0000000-0000-0000-0000-000000000001',
   'jane.smith@example.com',
   'Jane Smith',
@@ -75,7 +75,7 @@ INSERT INTO chapter_memberships (id, chapter_id, member_id, role, status, joined
 VALUES (
   'f0000000-0000-0000-0000-000000000001',
   'd0000000-0000-0000-0000-000000000001',
-  'e0000000-0000-0000-0000-000000000001',
+  'user_test_jane_smith_001',
   'member',
   'active',
   '2026-01-01',
