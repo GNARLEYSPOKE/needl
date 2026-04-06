@@ -194,6 +194,9 @@ export interface Database {
           is_active: boolean;
           last_login_at: string | null;
           onboarding_completed_at: string | null;
+          first_search_at: string | null;
+          first_ask_posted_at: string | null;
+          first_intro_requested_at: string | null;
           created_at: string;
           deleted_at: string | null;
         };
@@ -210,6 +213,9 @@ export interface Database {
           is_active?: boolean;
           last_login_at?: string | null;
           onboarding_completed_at?: string | null;
+          first_search_at?: string | null;
+          first_ask_posted_at?: string | null;
+          first_intro_requested_at?: string | null;
           created_at?: string;
           deleted_at?: string | null;
         };
@@ -226,6 +232,9 @@ export interface Database {
           is_active?: boolean;
           last_login_at?: string | null;
           onboarding_completed_at?: string | null;
+          first_search_at?: string | null;
+          first_ask_posted_at?: string | null;
+          first_intro_requested_at?: string | null;
           created_at?: string;
           deleted_at?: string | null;
         };

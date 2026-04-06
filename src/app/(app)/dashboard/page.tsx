@@ -1,6 +1,9 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { createServiceClient } from '@/lib/supabase/admin';
+import { getOnboardingStatus } from '@/lib/actions/onboarding';
+import { OnboardingChecklist } from '@/components/onboarding/onboarding-checklist';
+import { CompletenessNudge } from '@/components/profile/completeness-nudge';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -17,12 +20,34 @@ export default async function DashboardPage() {
     redirect('/onboarding');
   }
 
+  const { data: onboarding } = await getOnboardingStatus();
+
+  // Get profile completeness for nudge
+  const { data: memberRow } = await supabase
+    .from('members')
+    .select('id')
+    .eq('clerk_user_id', userId)
+    .single();
+
+  let profileCompleteness = 0;
+  if (memberRow) {
+    const { data: profile } = await supabase
+      .from('member_profiles')
+      .select('profile_completeness')
+      .eq('member_id', memberRow.id)
+      .single();
+    profileCompleteness = profile?.profile_completeness ?? 0;
+  }
+
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 py-8">
+    <div className="mx-auto w-full max-w-2xl space-y-6 px-4 py-8">
       <h1 className="text-2xl font-semibold tracking-tight">
         Welcome back{member?.full_name ? `, ${member.full_name}` : ''}
       </h1>
-      <p className="text-muted-foreground mt-2 text-sm">Your dashboard is coming in Phase 3.</p>
+
+      {onboarding && !onboarding.allComplete && <OnboardingChecklist steps={onboarding.steps} />}
+
+      <CompletenessNudge completeness={profileCompleteness} />
     </div>
   );
 }

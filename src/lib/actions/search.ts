@@ -134,5 +134,12 @@ export async function searchMembers(
     ),
   );
 
+  // Track first search milestone
+  await adminClient
+    .from('members')
+    .update({ first_search_at: new Date().toISOString() })
+    .eq('id', member.data.memberId)
+    .is('first_search_at', null);
+
   return { data: matchResults, error: null };
 }

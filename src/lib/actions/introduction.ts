@@ -126,6 +126,14 @@ export async function requestIntroduction(
     return { data: null, error: insertError?.message ?? 'Failed to create introduction' };
   }
 
+  // Track first intro milestone
+  const adminClient = createServiceClient();
+  await adminClient
+    .from('members')
+    .update({ first_intro_requested_at: new Date().toISOString() })
+    .eq('id', member.data.memberId)
+    .is('first_intro_requested_at', null);
+
   // Send notification email
   const notifier = getNotificationService();
   const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000';

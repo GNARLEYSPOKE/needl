@@ -53,6 +53,14 @@ export async function createAsk(
     }
   }
 
+  // Track first ask milestone
+  const adminClient = createServiceClient();
+  await adminClient
+    .from('members')
+    .update({ first_ask_posted_at: new Date().toISOString() })
+    .eq('id', member.data.memberId)
+    .is('first_ask_posted_at', null);
+
   return { data: { id: ask.id }, error: null };
 }
 
