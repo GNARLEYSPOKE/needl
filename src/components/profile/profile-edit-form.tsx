@@ -109,6 +109,13 @@ export function ProfileEditForm({ existingProfile }: ProfileEditFormProps) {
           <div>
             <Label htmlFor="company_url">Website (optional)</Label>
             <Input id="company_url" placeholder="https://" {...register('company_url')} />
+            {values.company_url &&
+              values.company_url.length > 0 &&
+              !/^https?:\/\/.+/.test(values.company_url) && (
+                <p className="mt-1 text-sm text-amber-600">
+                  URL should start with https:// (e.g. https://dotfusion.com)
+                </p>
+              )}
           </div>
           <div>
             <Label htmlFor="tagline">Tagline</Label>

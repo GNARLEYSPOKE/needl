@@ -185,6 +185,13 @@ export function OnboardingForm({ memberName, avatarUrl, existingProfile }: Onboa
               {stepErrors.company_url && (
                 <p className="text-destructive mt-1 text-sm">{stepErrors.company_url}</p>
               )}
+              {values.company_url &&
+                values.company_url.length > 0 &&
+                !/^https?:\/\/.+/.test(values.company_url) && (
+                  <p className="mt-1 text-sm text-amber-600">
+                    URL should start with https:// (e.g. https://dotfusion.com)
+                  </p>
+                )}
             </div>
             <div>
               <Label htmlFor="tagline">Tagline</Label>
