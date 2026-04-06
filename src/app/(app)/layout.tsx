@@ -14,7 +14,7 @@ export default async function AppLayout({ children }: { children: React.ReactNod
   const { data: member } = await supabase
     .from('members')
     .select('onboarding_completed_at')
-    .eq('id', userId)
+    .eq('clerk_user_id', userId)
     .single();
 
   // If member exists but hasn't completed onboarding, redirect to onboarding

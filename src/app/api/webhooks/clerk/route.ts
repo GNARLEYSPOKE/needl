@@ -38,8 +38,12 @@ export async function POST(req: Request): Promise<Response> {
   if (event.type === 'user.created') {
     const { id, email_addresses, first_name, last_name, image_url, external_accounts } = event.data;
 
-    // Skip if member already exists
-    const { data: existing } = await supabase.from('members').select('id').eq('id', id).single();
+    // Skip if member already exists for this Clerk user
+    const { data: existing } = await supabase
+      .from('members')
+      .select('id')
+      .eq('clerk_user_id', id)
+      .single();
 
     if (existing) {
       return new Response('OK', { status: 200 });
@@ -54,13 +58,14 @@ export async function POST(req: Request): Promise<Response> {
     const { data: org } = await supabase.from('organizations').select('id').limit(1).single();
 
     if (!org) {
-      console.error('No organization found for member upsert');
+      console.error('No organization found for member insert');
       return new Response('OK', { status: 200 });
     }
 
+    // Insert member — id is auto-generated uuid, clerk_user_id maps to Clerk
     const { error } = await supabase.from('members').insert({
-      id,
       organization_id: org.id,
+      clerk_user_id: id,
       email,
       full_name: fullName,
       avatar_url: image_url ?? null,
@@ -88,7 +93,7 @@ export async function POST(req: Request): Promise<Response> {
         full_name: fullName,
         avatar_url: image_url ?? null,
       })
-      .eq('id', id);
+      .eq('clerk_user_id', id);
 
     if (error) {
       console.error('Failed to update member:', error.message);

@@ -10,7 +10,7 @@ export default async function DashboardPage() {
   const { data: member } = await supabase
     .from('members')
     .select('full_name, onboarding_completed_at')
-    .eq('id', userId)
+    .eq('clerk_user_id', userId)
     .single();
 
   // If member hasn't completed onboarding, redirect

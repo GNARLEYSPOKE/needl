@@ -184,6 +184,7 @@ export interface Database {
         Row: {
           id: string;
           organization_id: string;
+          clerk_user_id: string | null;
           email: string;
           phone: string | null;
           full_name: string;
@@ -197,8 +198,9 @@ export interface Database {
           deleted_at: string | null;
         };
         Insert: {
-          id: string; // Set to Clerk user ID — NOT auto-generated
+          id?: string; // Auto-generated uuid
           organization_id: string;
+          clerk_user_id?: string | null;
           email: string;
           phone?: string | null;
           full_name: string;
@@ -214,6 +216,7 @@ export interface Database {
         Update: {
           id?: string;
           organization_id?: string;
+          clerk_user_id?: string | null;
           email?: string;
           phone?: string | null;
           full_name?: string;

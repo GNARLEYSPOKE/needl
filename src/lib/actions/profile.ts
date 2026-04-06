@@ -2,6 +2,7 @@
 
 import { auth } from '@clerk/nextjs/server';
 import { createClient } from '@/lib/supabase/server';
+import { getCurrentMemberId } from '@/lib/actions/auth';
 import { createAnthropicAIService } from '@/lib/services/ai';
 import { FullProfileSchema } from '@/lib/validations/profile';
 import type { ProfileDraft, ProfileDraftParams } from '@/lib/services/ai';
@@ -47,8 +48,8 @@ function calculateProfileCompleteness(profile: CompletenessInput): number {
 export async function saveProfile(
   input: FullProfileInput,
 ): Promise<{ data: { profile_completeness: number } | null; error: string | null }> {
-  const { userId } = await auth();
-  if (!userId) return { data: null, error: 'Unauthorized' };
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
 
   const parsed = FullProfileSchema.safeParse(input);
   if (!parsed.success) {
@@ -62,7 +63,7 @@ export async function saveProfile(
 
   const { error } = await supabase.from('member_profiles').upsert(
     {
-      member_id: userId,
+      member_id: member.data.memberId,
       company_name: profile.company_name,
       company_url: profile.company_url || null,
       tagline: profile.tagline,
@@ -89,19 +90,19 @@ export async function saveProfile(
 export async function completeOnboarding(
   input: FullProfileInput,
 ): Promise<{ data: { profile_completeness: number } | null; error: string | null }> {
-  const { userId } = await auth();
-  if (!userId) return { data: null, error: 'Unauthorized' };
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
 
   // Save the profile first
   const result = await saveProfile(input);
   if (result.error) return result;
 
-  // Mark onboarding as completed (uses authenticated client — members UPDATE allows own record)
+  // Mark onboarding as completed
   const supabase = await createClient();
   const { error } = await supabase
     .from('members')
     .update({ onboarding_completed_at: new Date().toISOString() })
-    .eq('id', userId);
+    .eq('id', member.data.memberId);
 
   if (error) return { data: null, error: error.message };
 
@@ -112,15 +113,14 @@ export async function completeOnboarding(
 // Get Profile
 // ============================================================================
 
-// Summary columns visible cross-chapter (no email/phone — those are on members table)
 const SUMMARY_COLUMNS =
   'id, member_id, company_name, tagline, what_i_do, who_i_serve, geography_served, profile_completeness' as const;
 
 export async function getProfile(
   memberId: string,
 ): Promise<{ data: (MemberProfileRow & { is_summary: boolean }) | null; error: string | null }> {
-  const { userId } = await auth();
-  if (!userId) return { data: null, error: 'Unauthorized' };
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
 
   const supabase = await createClient();
 
@@ -128,7 +128,7 @@ export async function getProfile(
   const { data: requesterChapters } = await supabase
     .from('chapter_memberships')
     .select('chapter_id')
-    .eq('member_id', userId)
+    .eq('member_id', member.data.memberId)
     .eq('status', 'active');
 
   const { data: targetChapters } = await supabase
@@ -139,7 +139,7 @@ export async function getProfile(
 
   const requesterChapterIds = new Set(requesterChapters?.map((c) => c.chapter_id) ?? []);
   const isSameChapter = targetChapters?.some((c) => requesterChapterIds.has(c.chapter_id)) ?? false;
-  const isOwnProfile = userId === memberId;
+  const isOwnProfile = member.data.memberId === memberId;
 
   if (isOwnProfile || isSameChapter) {
     const { data, error } = await supabase
@@ -161,7 +161,6 @@ export async function getProfile(
 
   if (error) return { data: null, error: error.message };
 
-  // Pad missing fields for type compatibility
   const summaryProfile: MemberProfileRow & { is_summary: boolean } = {
     id: data.id,
     member_id: data.member_id,
@@ -191,14 +190,14 @@ export async function getMyProfile(): Promise<{
   data: MemberProfileRow | null;
   error: string | null;
 }> {
-  const { userId } = await auth();
-  if (!userId) return { data: null, error: 'Unauthorized' };
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from('member_profiles')
     .select('*')
-    .eq('member_id', userId)
+    .eq('member_id', member.data.memberId)
     .single();
 
   if (error && error.code !== 'PGRST116') return { data: null, error: error.message };
@@ -206,7 +205,7 @@ export async function getMyProfile(): Promise<{
 }
 
 // ============================================================================
-// LinkedIn Import (existing)
+// LinkedIn Import
 // ============================================================================
 
 interface LinkedInImportData {

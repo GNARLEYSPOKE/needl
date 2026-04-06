@@ -12,7 +12,7 @@ export default async function OnboardingPage() {
   const { data: member } = await supabase
     .from('members')
     .select('full_name, avatar_url, onboarding_completed_at')
-    .eq('id', userId)
+    .eq('clerk_user_id', userId)
     .single();
 
   if (member?.onboarding_completed_at) {
