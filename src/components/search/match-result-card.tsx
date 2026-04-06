@@ -58,7 +58,7 @@ export function MatchResultCard({ result }: MatchResultCardProps) {
         )}
 
         <Link
-          href={`/profile/${result.member_id}`}
+          href={`/introductions/request/${result.member_id}`}
           className={buttonVariants({ variant: 'default', className: 'w-full' })}
         >
           Request Introduction

@@ -107,7 +107,7 @@ export default async function AskDetailPage({ params }: AskDetailPageProps) {
 
                   <div className="mt-3 flex gap-2">
                     <Link
-                      href={`/profile/${match.matched_member_id}`}
+                      href={`/introductions/request/${match.matched_member_id}?askId=${ask.id}&matchId=${match.id}`}
                       className={buttonVariants({ variant: 'default', size: 'sm' })}
                     >
                       Request Introduction

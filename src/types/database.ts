@@ -492,6 +492,54 @@ export interface Database {
         };
         Relationships: [];
       };
+      introductions: {
+        Row: {
+          id: string;
+          requester_member_id: string;
+          target_member_id: string;
+          connector_member_id: string | null;
+          ask_id: string | null;
+          match_id: string | null;
+          message: string;
+          connector_response: Database['public']['Enums']['connector_response'] | null;
+          connector_note: string | null;
+          alternative_member_id: string | null;
+          intro_sent_at: string | null;
+          status: Database['public']['Enums']['introduction_status'];
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          requester_member_id: string;
+          target_member_id: string;
+          connector_member_id?: string | null;
+          ask_id?: string | null;
+          match_id?: string | null;
+          message: string;
+          connector_response?: Database['public']['Enums']['connector_response'] | null;
+          connector_note?: string | null;
+          alternative_member_id?: string | null;
+          intro_sent_at?: string | null;
+          status?: Database['public']['Enums']['introduction_status'];
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          requester_member_id?: string;
+          target_member_id?: string;
+          connector_member_id?: string | null;
+          ask_id?: string | null;
+          match_id?: string | null;
+          message?: string;
+          connector_response?: Database['public']['Enums']['connector_response'] | null;
+          connector_note?: string | null;
+          alternative_member_id?: string | null;
+          intro_sent_at?: string | null;
+          status?: Database['public']['Enums']['introduction_status'];
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -545,6 +593,15 @@ export interface Database {
       ask_visibility: 'chapter' | 'network';
       ask_status: 'active' | 'fulfilled' | 'paused' | 'expired';
       asker_action: 'pending' | 'intro_requested' | 'dismissed' | 'connected';
+      connector_response: 'pending' | 'accepted' | 'declined' | 'suggested_alternative';
+      introduction_status:
+        | 'pending_connector'
+        | 'pending_target'
+        | 'connector_accepted'
+        | 'connector_declined'
+        | 'completed'
+        | 'declined'
+        | 'expired';
     };
     CompositeTypes: Record<string, never>;
   };
