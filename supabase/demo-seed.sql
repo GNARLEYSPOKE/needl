@@ -209,10 +209,10 @@ INSERT INTO events (id, chapter_id, title, format, location, scheduled_at, durat
 ON CONFLICT (id) DO NOTHING;
 
 INSERT INTO visitor_invitations (id, event_id, inviting_member_id, visitor_name, visitor_email, visitor_company, rsvp_status, follow_up_status) VALUES
-  ('gg100000-0000-0000-0000-000000000001', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'Alex Novak', 'alex@novakfinance.ca', 'Novak Finance', 'confirmed', 'none'),
-  ('gg100000-0000-0000-0000-000000000002', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000002', 'Maria Santos', 'maria@santoslaw.ca', 'Santos Legal', 'pending', 'none'),
-  ('gg100000-0000-0000-0000-000000000003', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000003', 'Tom Reeves', 'tom@reeveshr.ca', 'Reeves HR', 'confirmed', 'contacted'),
-  ('gg100000-0000-0000-0000-000000000004', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000007', 'Jane Okafor', 'jane@okafortech.ca', 'Okafor Tech', 'confirmed', 'applied'),
-  ('gg100000-0000-0000-0000-000000000005', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000008', 'Peter Huang', 'peter@huangdesign.ca', 'Huang Design', 'declined', 'none'),
-  ('gg100000-0000-0000-0000-000000000006', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000009', 'Rachel Kim', 'rachel@kimconsulting.ca', 'Kim Consulting', 'confirmed', 'joined')
+  ('ab100000-0000-0000-0000-000000000001', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000001', 'Alex Novak', 'alex@novakfinance.ca', 'Novak Finance', 'confirmed', 'none'),
+  ('ab100000-0000-0000-0000-000000000002', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000002', 'Maria Santos', 'maria@santoslaw.ca', 'Santos Legal', 'pending', 'none'),
+  ('ab100000-0000-0000-0000-000000000003', 'ff100000-0000-0000-0000-000000000001', 'e1000000-0000-0000-0000-000000000003', 'Tom Reeves', 'tom@reeveshr.ca', 'Reeves HR', 'confirmed', 'contacted'),
+  ('ab100000-0000-0000-0000-000000000004', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000007', 'Jane Okafor', 'jane@okafortech.ca', 'Okafor Tech', 'confirmed', 'applied'),
+  ('ab100000-0000-0000-0000-000000000005', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000008', 'Peter Huang', 'peter@huangdesign.ca', 'Huang Design', 'declined', 'none'),
+  ('ab100000-0000-0000-0000-000000000006', 'ff100000-0000-0000-0000-000000000002', 'e1000000-0000-0000-0000-000000000009', 'Rachel Kim', 'rachel@kimconsulting.ca', 'Kim Consulting', 'confirmed', 'joined')
 ON CONFLICT (id) DO NOTHING;
