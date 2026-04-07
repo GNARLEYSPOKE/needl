@@ -80,6 +80,7 @@ export async function getMyAsks(): Promise<{
     .from('asks')
     .select('*')
     .eq('member_id', member.data.memberId)
+    .neq('status', 'expired')
     .order('created_at', { ascending: false });
 
   if (error) return { data: null, error: error.message };
@@ -246,10 +247,11 @@ export async function deleteAsk(askId: string): Promise<{ data: null; error: str
   const member = await getCurrentMemberId();
   if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
 
+  // Soft delete — set status to 'expired' (keeps matches intact for audit trail)
   const supabase = await createClient();
   const { error } = await supabase
     .from('asks')
-    .delete()
+    .update({ status: 'expired' })
     .eq('id', askId)
     .eq('member_id', member.data.memberId);
 

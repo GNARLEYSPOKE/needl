@@ -61,7 +61,7 @@ export function DeleteAskButton({ askId }: DeleteAskButtonProps) {
         <DialogHeader>
           <DialogTitle>Delete this ask?</DialogTitle>
           <DialogDescription>
-            This will permanently remove this ask and its matches. This action cannot be undone.
+            This will remove the ask from your list. Any existing matches will be preserved.
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
