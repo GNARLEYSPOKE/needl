@@ -119,9 +119,9 @@ BEGIN
       'I provide ' || professions[i] || ' services to businesses across ' || geos[i][2] || '.',
       'Business owners with $2M-$50M revenue in ' || geos[i][2] || ' who need expert ' || professions[i] || ' support.',
       'Average client ROI of ' || (150 + (i * 10)) || '%. ' || (20 + i) || '+ clients served.',
-      ARRAY[professions[i], geos[i][2] || ' businesses'],
-      geos[i],
-      ARRAY[split_part(professions[i], ' ', 1)],
+      ARRAY[professions[i], geos[i][2] || ' businesses']::text[],
+      ARRAY[geos[i][1], geos[i][2]]::text[],
+      ARRAY[split_part(professions[i], ' ', 1)]::text[],
       CASE WHEN i <= 10 THEN 45 + (i * 2) -- some low completeness for nudge testing
            ELSE 75 + (i % 20) END,
       (SELECT array_agg(sin(j * 0.1 + i * 0.5))::vector(1536) FROM generate_series(1, 1536) AS j)
