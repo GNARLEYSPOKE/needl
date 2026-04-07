@@ -31,9 +31,9 @@ const NAV_LINKS: NavLink[] = [
   {
     href: '/chapter/admin',
     label: 'Ch. Admin',
-    roles: ['director', 'co_director', 'network_admin', 'super_admin'],
+    roles: ['director', 'network_admin'],
   },
-  { href: '/admin', label: 'Admin', roles: ['network_admin', 'super_admin'] },
+  { href: '/admin', label: 'Admin', roles: ['network_admin'] },
 ];
 
 export function AppHeader() {

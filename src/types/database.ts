@@ -800,7 +800,7 @@ export interface Database {
     };
     Enums: {
       meeting_format: 'in_person' | 'virtual' | 'hybrid';
-      member_role: 'member' | 'director' | 'co_director';
+      member_role: 'member' | 'director' | 'network_admin';
       membership_status:
         | 'active'
         | 'lapsed'
