@@ -15,19 +15,34 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { cn } from '@/lib/utils';
 
-const NAV_LINKS = [
+interface NavLink {
+  href: string;
+  label: string;
+  roles?: string[];
+}
+
+const NAV_LINKS: NavLink[] = [
   { href: '/dashboard', label: 'Dashboard' },
   { href: '/search', label: 'Search' },
   { href: '/asks', label: 'Asks' },
   { href: '/introductions', label: 'Introductions' },
   { href: '/chapter/asks', label: 'Chapter' },
   { href: '/referrals', label: 'Referrals' },
-] as const;
+  {
+    href: '/chapter/admin',
+    label: 'Ch. Admin',
+    roles: ['director', 'co_director', 'network_admin', 'super_admin'],
+  },
+  { href: '/admin', label: 'Admin', roles: ['network_admin', 'super_admin'] },
+];
 
 export function AppHeader() {
   const pathname = usePathname();
   const { user } = useUser();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const userRole = (user?.publicMetadata?.role as string) ?? 'member';
+  const visibleLinks = NAV_LINKS.filter((link) => !link.roles || link.roles.includes(userRole));
 
   const initials = user?.fullName
     ?.split(' ')
@@ -46,7 +61,7 @@ export function AppHeader() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 md:flex">
-          {NAV_LINKS.map((link) => (
+          {visibleLinks.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -106,7 +121,7 @@ export function AppHeader() {
             </SheetTrigger>
             <SheetContent side="right" className="w-64 pt-10">
               <nav className="flex flex-col gap-1">
-                {NAV_LINKS.map((link) => (
+                {visibleLinks.map((link) => (
                   <Link
                     key={link.href}
                     href={link.href}

@@ -101,6 +101,7 @@ export interface Database {
           meeting_time: string;
           timezone: string;
           max_members: number;
+          billing_status: string;
           is_active: boolean;
           created_at: string;
         };
@@ -114,6 +115,7 @@ export interface Database {
           meeting_time: string;
           timezone?: string;
           max_members?: number;
+          billing_status?: string;
           is_active?: boolean;
           created_at?: string;
         };
@@ -127,6 +129,7 @@ export interface Database {
           meeting_time?: string;
           timezone?: string;
           max_members?: number;
+          billing_status?: string;
           is_active?: boolean;
           created_at?: string;
         };
@@ -708,6 +711,48 @@ export interface Database {
         };
         Relationships: [];
       };
+      notifications: {
+        Row: {
+          id: string;
+          member_id: string;
+          type: string;
+          title: string;
+          body: string;
+          related_entity_type: string | null;
+          related_entity_id: string | null;
+          is_read: boolean;
+          read_at: string | null;
+          delivery_channel: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          member_id: string;
+          type: string;
+          title: string;
+          body: string;
+          related_entity_type?: string | null;
+          related_entity_id?: string | null;
+          is_read?: boolean;
+          read_at?: string | null;
+          delivery_channel?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          member_id?: string;
+          type?: string;
+          title?: string;
+          body?: string;
+          related_entity_type?: string | null;
+          related_entity_id?: string | null;
+          is_read?: boolean;
+          read_at?: string | null;
+          delivery_channel?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -743,6 +788,14 @@ export interface Database {
           geography_served: string[];
           match_score: number;
         }[];
+      };
+      refresh_engagement_scores: {
+        Args: Record<string, never>;
+        Returns: undefined;
+      };
+      refresh_engagement_scores_if_stale: {
+        Args: Record<string, never>;
+        Returns: undefined;
       };
     };
     Enums: {
