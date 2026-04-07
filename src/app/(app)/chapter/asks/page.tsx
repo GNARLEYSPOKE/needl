@@ -27,7 +27,8 @@ export default async function ChapterAsksPage() {
         {asks?.map((ask) => (
           <Card key={ask.id}>
             <CardContent className="pt-6">
-              <p className="text-sm">{ask.body}</p>
+              <p className="text-sm font-medium">{ask.member_name}</p>
+              <p className="mt-1 text-sm">{ask.body}</p>
               <div className="mt-2 flex flex-wrap gap-1">
                 {ask.geography_filter.map((geo) => (
                   <Badge key={geo} variant="outline" className="text-xs">

@@ -2,6 +2,7 @@ import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { buttonVariants } from '@/components/ui/button';
+import { DeleteAskButton } from '@/components/asks/delete-ask-button';
 import type { Database } from '@/types/database';
 
 type AskRow = Database['public']['Tables']['asks']['Row'];
@@ -23,7 +24,10 @@ export function AskCard({ ask }: AskCardProps) {
       <CardContent className="pt-6">
         <div className="flex items-start justify-between gap-2">
           <p className="flex-1 text-sm">{ask.body}</p>
-          <Badge variant={STATUS_VARIANT[ask.status] ?? 'outline'}>{ask.status}</Badge>
+          <div className="flex items-center gap-1">
+            <Badge variant={STATUS_VARIANT[ask.status] ?? 'outline'}>{ask.status}</Badge>
+            <DeleteAskButton askId={ask.id} />
+          </div>
         </div>
 
         <div className="mt-3 flex flex-wrap items-center gap-2">

@@ -237,3 +237,22 @@ export async function updateMatchAction(
   if (error) return { data: null, error: error.message };
   return { data: null, error: null };
 }
+
+// ============================================================================
+// Delete Ask
+// ============================================================================
+
+export async function deleteAsk(askId: string): Promise<{ data: null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from('asks')
+    .delete()
+    .eq('id', askId)
+    .eq('member_id', member.data.memberId);
+
+  if (error) return { data: null, error: error.message };
+  return { data: null, error: null };
+}

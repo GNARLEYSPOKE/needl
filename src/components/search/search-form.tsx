@@ -16,6 +16,7 @@ const COUNTRY_OPTIONS = ['Canada', 'United States', 'United Kingdom', 'Australia
 export function SearchForm() {
   const [query, setQuery] = useState('');
   const [countryFilter, setCountryFilter] = useState<string | undefined>(undefined);
+  const [chapterOnly, setChapterOnly] = useState(false);
   const [results, setResults] = useState<MatchResult[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isPending, startTransition] = useTransition();
@@ -28,7 +29,11 @@ export function SearchForm() {
 
     startTransition(async () => {
       try {
-        const result = await searchMembers({ query, countryFilter });
+        const result = await searchMembers({
+          query,
+          countryFilter: chapterOnly ? undefined : countryFilter,
+          chapterOnly,
+        });
         if (result.error) {
           toast.error(result.error);
           setResults(null);
@@ -64,21 +69,37 @@ export function SearchForm() {
         </Button>
       </div>
 
-      {/* Country filter chips */}
+      {/* Filter chips */}
       <div className="flex flex-wrap gap-2">
         <Badge
-          variant={countryFilter === undefined ? 'default' : 'outline'}
+          variant={!chapterOnly && countryFilter === undefined ? 'default' : 'outline'}
           className="cursor-pointer"
-          onClick={() => setCountryFilter(undefined)}
+          onClick={() => {
+            setCountryFilter(undefined);
+            setChapterOnly(false);
+          }}
         >
           All regions
+        </Badge>
+        <Badge
+          variant={chapterOnly ? 'default' : 'outline'}
+          className="cursor-pointer"
+          onClick={() => {
+            setChapterOnly(!chapterOnly);
+            if (!chapterOnly) setCountryFilter(undefined);
+          }}
+        >
+          My Chapter
         </Badge>
         {COUNTRY_OPTIONS.map((country) => (
           <Badge
             key={country}
             variant={countryFilter === country ? 'default' : 'outline'}
             className="cursor-pointer"
-            onClick={() => setCountryFilter(countryFilter === country ? undefined : country)}
+            onClick={() => {
+              setCountryFilter(countryFilter === country ? undefined : country);
+              setChapterOnly(false);
+            }}
           >
             {country}
           </Badge>

@@ -6,8 +6,12 @@ import type { Database } from '@/types/database';
 
 type AskRow = Database['public']['Tables']['asks']['Row'];
 
+export interface ChapterAsk extends AskRow {
+  member_name: string;
+}
+
 export async function getChapterAsks(): Promise<{
-  data: AskRow[] | null;
+  data: ChapterAsk[] | null;
   error: string | null;
 }> {
   const member = await getCurrentMemberId();
@@ -15,7 +19,6 @@ export async function getChapterAsks(): Promise<{
 
   const adminClient = createServiceClient();
 
-  // Get member's chapter IDs
   const { data: memberships } = await adminClient
     .from('chapter_memberships')
     .select('chapter_id')
@@ -26,7 +29,6 @@ export async function getChapterAsks(): Promise<{
 
   const chapterIds = memberships.map((m) => m.chapter_id);
 
-  // Get all chapter members
   const { data: chapterMembers } = await adminClient
     .from('chapter_memberships')
     .select('member_id')
@@ -37,7 +39,6 @@ export async function getChapterAsks(): Promise<{
 
   const memberIds = [...new Set(chapterMembers.map((m) => m.member_id))];
 
-  // Get active asks from chapter members
   const { data: asks, error } = await adminClient
     .from('asks')
     .select('*')
@@ -46,5 +47,20 @@ export async function getChapterAsks(): Promise<{
     .order('created_at', { ascending: false });
 
   if (error) return { data: null, error: error.message };
-  return { data: asks ?? [], error: null };
+  if (!asks || asks.length === 0) return { data: [], error: null };
+
+  // Fetch member names
+  const { data: members } = await adminClient
+    .from('members')
+    .select('id, full_name')
+    .in('id', memberIds);
+
+  const nameMap = new Map(members?.map((m) => [m.id, m.full_name]) ?? []);
+
+  const enriched: ChapterAsk[] = asks.map((ask) => ({
+    ...ask,
+    member_name: nameMap.get(ask.member_id) ?? 'Unknown',
+  }));
+
+  return { data: enriched, error: null };
 }

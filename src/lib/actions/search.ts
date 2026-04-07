@@ -31,7 +31,7 @@ export async function searchMembers(
     return { data: null, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
   }
 
-  const { query, countryFilter } = parsed.data;
+  const { query, countryFilter, chapterOnly } = parsed.data;
 
   // Get requester's org ID
   const adminClient = createServiceClient();
@@ -76,8 +76,36 @@ export async function searchMembers(
     return { data: [], error: null };
   }
 
+  // Filter to chapter members only if requested
+  let filteredResults = results;
+  if (chapterOnly) {
+    const { data: myChapters } = await adminClient
+      .from('chapter_memberships')
+      .select('chapter_id')
+      .eq('member_id', member.data.memberId)
+      .eq('status', 'active');
+
+    if (myChapters && myChapters.length > 0) {
+      const chapterIds = myChapters.map((c) => c.chapter_id);
+      const { data: chapterMembers } = await adminClient
+        .from('chapter_memberships')
+        .select('member_id')
+        .in('chapter_id', chapterIds)
+        .eq('status', 'active');
+
+      const chapterMemberIds = new Set(chapterMembers?.map((m) => m.member_id) ?? []);
+      filteredResults = results.filter((r: { member_id: string }) =>
+        chapterMemberIds.has(r.member_id),
+      );
+    }
+  }
+
+  if (filteredResults.length === 0) {
+    return { data: [], error: null };
+  }
+
   // Fetch member names for results
-  const memberIds = results.map((r: { member_id: string }) => r.member_id);
+  const memberIds = filteredResults.map((r: { member_id: string }) => r.member_id);
   const { data: members } = await adminClient
     .from('members')
     .select('id, full_name, avatar_url')
@@ -90,7 +118,7 @@ export async function searchMembers(
   const aiService = anthropicKey ? createAnthropicAIService(anthropicKey) : null;
 
   const matchResults: MatchResult[] = await Promise.all(
-    results.map(
+    filteredResults.map(
       async (r: {
         member_id: string;
         company_name: string;
