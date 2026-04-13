@@ -59,18 +59,26 @@ export function MemberSearchCard({
             </div>
           )}
 
-          {person.is_same_chapter ? (
-            <Link
-              href={`/profile/${person.member_id}`}
-              className={buttonVariants({ variant: 'outline', className: 'mt-3 w-full' })}
-            >
-              View Profile
-            </Link>
-          ) : (
-            <Button onClick={() => setOpen(true)} className="mt-3 w-full">
+          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
+            {person.is_same_chapter ? (
+              <Link
+                href={`/profile/${person.member_id}`}
+                className={buttonVariants({ variant: 'outline', className: 'flex-1' })}
+              >
+                View Profile
+              </Link>
+            ) : (
+              <Link
+                href={`/introductions/request/${person.member_id}`}
+                className={buttonVariants({ variant: 'outline', className: 'flex-1' })}
+              >
+                Connect
+              </Link>
+            )}
+            <Button onClick={() => setOpen(true)} className="flex-1">
               Refer {firstName}
             </Button>
-          )}
+          </div>
         </CardContent>
       </Card>
 

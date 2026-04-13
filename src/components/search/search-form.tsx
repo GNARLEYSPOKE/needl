@@ -158,7 +158,7 @@ export function SearchForm({ senderName }: SearchFormProps): React.ReactElement 
           <h2 className="text-sm font-semibold tracking-tight">Service Matches</h2>
           <div className="space-y-4">
             {serviceResults!.map((result) => (
-              <MatchResultCard key={result.member_id} result={result} />
+              <MatchResultCard key={result.member_id} result={result} senderName={senderName} />
             ))}
           </div>
         </section>
