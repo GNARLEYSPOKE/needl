@@ -1,10 +1,11 @@
 'use client';
 
+import Link from 'next/link';
 import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { ReferMemberModal } from '@/components/chapter/refer-member-modal';
 import type { PersonResult } from '@/lib/actions/search';
 
@@ -58,9 +59,18 @@ export function MemberSearchCard({
             </div>
           )}
 
-          <Button onClick={() => setOpen(true)} className="mt-3 w-full">
-            Refer {firstName}
-          </Button>
+          {person.is_same_chapter ? (
+            <Link
+              href={`/profile/${person.member_id}`}
+              className={buttonVariants({ variant: 'outline', className: 'mt-3 w-full' })}
+            >
+              View Profile
+            </Link>
+          ) : (
+            <Button onClick={() => setOpen(true)} className="mt-3 w-full">
+              Refer {firstName}
+            </Button>
+          )}
         </CardContent>
       </Card>
 

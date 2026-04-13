@@ -31,6 +31,9 @@ export function MatchResultCard({ result }: MatchResultCardProps) {
           <div className="min-w-0 flex-1">
             <p className="font-medium">{result.member_name}</p>
             <p className="text-muted-foreground text-sm">{result.company_name}</p>
+            {result.chapter_name && (
+              <p className="text-muted-foreground text-xs">{result.chapter_name}</p>
+            )}
           </div>
         </div>
       </CardHeader>

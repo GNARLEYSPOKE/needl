@@ -18,6 +18,7 @@ export interface MatchResult {
   match_reason: string;
   member_name: string;
   avatar_url: string | null;
+  chapter_name: string;
 }
 
 export async function searchMembers(
@@ -113,6 +114,23 @@ export async function searchMembers(
 
   const memberMap = new Map(members?.map((m) => [m.id, m]) ?? []);
 
+  // Resolve each result member's chapter name
+  const { data: resultMemberships } = await adminClient
+    .from('chapter_memberships')
+    .select('member_id, chapter_id')
+    .in('member_id', memberIds)
+    .eq('status', 'active');
+
+  const resultChapterIds = Array.from(new Set(resultMemberships?.map((m) => m.chapter_id) ?? []));
+  const { data: resultChapters } = resultChapterIds.length
+    ? await adminClient.from('chapters').select('id, name').in('id', resultChapterIds)
+    : { data: [] };
+
+  const chapterNameMap = new Map(resultChapters?.map((c) => [c.id, c.name]) ?? []);
+  const memberChapterNameMap = new Map(
+    resultMemberships?.map((m) => [m.member_id, chapterNameMap.get(m.chapter_id) ?? '']) ?? [],
+  );
+
   // Generate AI match reasons in parallel
   const anthropicKey = process.env.ANTHROPIC_API_KEY;
   const aiService = anthropicKey ? createAnthropicAIService(anthropicKey) : null;
@@ -157,6 +175,7 @@ export async function searchMembers(
           match_reason: matchReason,
           member_name: memberInfo?.full_name ?? 'Unknown',
           avatar_url: memberInfo?.avatar_url ?? null,
+          chapter_name: memberChapterNameMap.get(r.member_id) ?? '',
         };
       },
     ),
@@ -185,6 +204,7 @@ export interface PersonResult {
   what_i_do: string;
   geography_served: string[];
   chapter_name: string;
+  is_same_chapter: boolean;
 }
 
 export async function searchByName(
@@ -278,11 +298,21 @@ export async function searchByName(
   const memberChapterMap = new Map(
     memberships?.map((m) => [m.member_id, chapterNameMap.get(m.chapter_id) ?? '']) ?? [],
   );
+  const memberChapterIdMap = new Map(memberships?.map((m) => [m.member_id, m.chapter_id]) ?? []);
+
+  // Current user's active chapters
+  const { data: myMemberships } = await adminClient
+    .from('chapter_memberships')
+    .select('chapter_id')
+    .eq('member_id', member.data.memberId)
+    .eq('status', 'active');
+  const myChapterIds = new Set(myMemberships?.map((m) => m.chapter_id) ?? []);
 
   const results: PersonResult[] = (members ?? [])
     .filter((m) => profileMap.has(m.id))
     .map((m) => {
       const profile = profileMap.get(m.id)!;
+      const theirChapterId = memberChapterIdMap.get(m.id);
       return {
         member_id: m.id,
         full_name: m.full_name,
@@ -292,6 +322,7 @@ export async function searchByName(
         what_i_do: profile.what_i_do,
         geography_served: profile.geography_served,
         chapter_name: memberChapterMap.get(m.id) ?? '',
+        is_same_chapter: !!theirChapterId && myChapterIds.has(theirChapterId),
       };
     });
 
