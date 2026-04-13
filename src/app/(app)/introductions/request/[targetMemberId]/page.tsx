@@ -78,7 +78,7 @@ export default async function RequestIntroPage({ params, searchParams }: Request
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">Request Introduction</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">Connect to {target.full_name}</h1>
       <div className="mt-6">
         <RequestIntroForm
           targetMemberId={targetMemberId}

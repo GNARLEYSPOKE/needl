@@ -110,7 +110,7 @@ export default async function AskDetailPage({ params }: AskDetailPageProps) {
                       href={`/introductions/request/${match.matched_member_id}?askId=${ask.id}&matchId=${match.id}`}
                       className={buttonVariants({ variant: 'default', size: 'sm' })}
                     >
-                      Request Introduction
+                      Connect
                     </Link>
                   </div>
                 </CardContent>

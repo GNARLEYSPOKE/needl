@@ -147,6 +147,7 @@ Use Plan Mode (Shift+Tab twice) before:
 - Any schema change or new migration
 - Any auth, billing, or service abstraction modification
 - Any new feature implementation
+- Check BACKLOG.md at the start of each phase for relevant items
 
 ## Context Management
 

@@ -60,7 +60,7 @@ export function RequestIntroForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg">Request introduction to {targetName}</CardTitle>
+        <CardTitle className="text-lg">Connect to {targetName}</CardTitle>
         <p className="text-muted-foreground text-sm">{targetCompany}</p>
       </CardHeader>
       <CardContent className="space-y-4">

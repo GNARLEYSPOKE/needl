@@ -22,6 +22,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Initialize git, create main branch, push to GitHub
 - [ ] Deploy blank app to Vercel (ca-central-1 region), confirm CI/CD pipeline works
 - [ ] Confirm Sentry receives a test error from the deployed app
+- [ ] Run /qa-phase 0 Project Scaffold
 
 **Commit:** `feat: initial project scaffold`
 
@@ -48,6 +49,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Run `supabase gen types typescript --linked > src/types/database.ts`
 - [ ] Verify all RLS policies: member A cannot read member B's data from a different organization
 - [ ] Seed: insert one organization (Corporate Connections Canada), three regions, one chapter
+- [ ] Run /qa-phase 1 Database Foundation
 
 **Commit:** `feat: database foundation with RLS`
 
@@ -69,6 +71,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: LinkedIn profile import on first sign-in (fetch LinkedIn data, pass to AIService.draftProfile)
 - [ ] Test: unauthenticated user cannot access any protected route
 - [ ] Test: authenticated member cannot access another organization's data
+- [ ] Run /qa-phase 2 Auth and Session
 
 **Commit:** `feat: auth and session with Clerk`
 
@@ -93,6 +96,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: profile completeness nudge UI (shown in dashboard until score > 70)
 - [ ] Test: embedding pipeline fires within 5 seconds of profile save
 - [ ] Test: cross-chapter member cannot see contact details of another member
+- [ ] Run /qa-phase 3 Member Profile
 
 **Commit:** `feat: member profile with async embedding pipeline`
 
@@ -113,6 +117,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Test: search returns results from different chapters within same organization
 - [ ] Test: search never returns members from a different organization
 - [ ] Test: search returns zero results gracefully (no broken UI)
+- [ ] Run /qa-phase 4 Search and Matching Engine
 
 **Commit:** `feat: cross-chapter search and matching engine`
 
@@ -138,6 +143,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: ask fulfillment flow (mark as fulfilled, attribute to a member)
 - [ ] Test: posting an ask triggers embedding and match within 10 seconds
 - [ ] Test: matches table rows are never deleted (audit trail integrity)
+- [ ] Run /qa-phase 5 Standing Ask
 
 **Commit:** `feat: standing ask engine with async matching`
 
@@ -162,6 +168,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: NotificationService calls for each introduction state transition
 - [ ] Test: connector receives notification within 30 seconds of intro request
 - [ ] Test: direct request fires correctly when connector declines
+- [ ] Run /qa-phase 6 Warm Introduction Flow
 
 **Commit:** `feat: warm introduction flow with connector algorithm`
 
@@ -185,6 +192,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: referral history view for members
 - [ ] Test: visitor RSVP link works without authentication
 - [ ] Test: Chapter Director cannot see visitor pipeline from another chapter
+- [ ] Run /qa-phase 7 Chapter Features
 
 **Commit:** `feat: chapter ask board, visitor pipeline, referral logging`
 
@@ -201,6 +209,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Build: Chapter Director onboarding dashboard — who has completed each step
 - [ ] Build: automated 7-day nudge email if member hasn't completed onboarding
   - NotificationService.sendOnboardingNudge() triggered by cron Edge Function
+- [ ] Run /qa-phase 8 Onboarding Journey
 
 **Commit:** `feat: new member onboarding journey`
 
@@ -232,6 +241,7 @@ Run `npm run type-check && npm run lint` before every commit.
   - Soft notification to Network Admin and Chapter Director at 23
 - [ ] Test: engagement score materialized view refreshes correctly
 - [ ] Test: at-risk flag appears for members with score < 30 expiring within 90 days
+- [ ] Run /qa-phase 9 Admin Dashboard and Chapter Health
 
 **Commit:** `feat: admin dashboard and chapter health scoring`
 
@@ -255,6 +265,7 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Verify: at least 3 at-risk members appear in admin dashboard
 - [ ] Verify: visitor pipeline has at least 5 invitations in various stages
 - [ ] Demo walkthrough: complete the full flow from search → match → intro request → acceptance
+- [ ] Run /qa-phase 10 Seed Data and Demo Prep
 
 **Commit:** `feat: seed data and demo preparation`
 
@@ -272,5 +283,6 @@ Run `npm run type-check && npm run lint` before every commit.
 - [ ] Runbook written for: embedding pipeline failure, Stripe webhook failure, Clerk webhook failure
 - [ ] README updated for developer onboarding (clone → .env.local → supabase db push → npm run dev)
 - [ ] Open source license audit: no GPL-licensed dependencies
+- [ ] Run /qa-phase 11 Production Readiness
 
 **Commit:** `feat: production readiness`
