@@ -25,7 +25,7 @@ export async function getOnboardingStatus(): Promise<{
 
   const { data: memberRow } = await adminClient
     .from('members')
-    .select('first_search_at, first_ask_posted_at, first_intro_requested_at')
+    .select('first_search_at')
     .eq('id', member.data.memberId)
     .single();
 
@@ -35,6 +35,13 @@ export async function getOnboardingStatus(): Promise<{
     .eq('member_id', member.data.memberId)
     .single();
 
+  const { data: referralRow } = await adminClient
+    .from('referrals')
+    .select('id')
+    .eq('referring_member_id', member.data.memberId)
+    .limit(1)
+    .maybeSingle();
+
   const steps: OnboardingStep[] = [
     {
       label: 'Complete your profile',
@@ -42,19 +49,14 @@ export async function getOnboardingStatus(): Promise<{
       href: '/profile/edit',
     },
     {
-      label: 'Post your first Standing Ask',
-      completed: !!memberRow?.first_ask_posted_at,
-      href: '/asks/new',
-    },
-    {
       label: 'Run your first search',
       completed: !!memberRow?.first_search_at,
       href: '/search',
     },
     {
-      label: 'Request your first introduction',
-      completed: !!memberRow?.first_intro_requested_at,
-      href: '/search',
+      label: 'Refer a chapter member',
+      completed: !!referralRow,
+      href: '/chapter/members',
     },
   ];
 
