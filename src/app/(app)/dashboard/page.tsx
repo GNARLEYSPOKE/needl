@@ -48,6 +48,10 @@ export default async function DashboardPage() {
       {onboarding && !onboarding.allComplete && <OnboardingChecklist steps={onboarding.steps} />}
 
       <CompletenessNudge completeness={profileCompleteness} />
+
+      {onboarding?.allComplete && profileCompleteness >= 70 && (
+        <p className="text-muted-foreground text-sm">You&apos;re all set up. Get connecting.</p>
+      )}
     </div>
   );
 }
