@@ -9,3 +9,11 @@ export const LogReferralSchema = z.object({
 });
 
 export type LogReferralInput = z.infer<typeof LogReferralSchema>;
+
+export const ExternalReferralSchema = z.object({
+  receivingMemberId: z.string().min(1, 'Member required'),
+  recipientEmail: z.string().email('Valid email required'),
+  message: z.string().min(20, 'Message too short').max(500, 'Max 500 characters'),
+});
+
+export type ExternalReferralInput = z.infer<typeof ExternalReferralSchema>;

@@ -3,8 +3,9 @@
 import { getCurrentMemberId } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
-import { LogReferralSchema } from '@/lib/validations/referral';
-import type { LogReferralInput } from '@/lib/validations/referral';
+import { createResendNotificationService } from '@/lib/services/notification';
+import { LogReferralSchema, ExternalReferralSchema } from '@/lib/validations/referral';
+import type { LogReferralInput, ExternalReferralInput } from '@/lib/validations/referral';
 import type { Database } from '@/types/database';
 
 type ReferralRow = Database['public']['Tables']['referrals']['Row'];
@@ -103,4 +104,82 @@ export async function updateReferralStatus(
 
   if (error) return { data: null, error: error.message };
   return { data: null, error: null };
+}
+
+// ============================================================================
+// External Referral — refer a chapter member to someone outside the network
+// ============================================================================
+
+export async function createExternalReferral(
+  input: ExternalReferralInput,
+): Promise<{ data: { id: string } | null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
+
+  const parsed = ExternalReferralSchema.safeParse(input);
+  if (!parsed.success) {
+    return { data: null, error: parsed.error.issues[0]?.message ?? 'Invalid input' };
+  }
+
+  const adminClient = createServiceClient();
+
+  // Get sender info + receiving member info
+  const { data: sender } = await adminClient
+    .from('members')
+    .select('full_name, email, organization_id')
+    .eq('id', member.data.memberId)
+    .single();
+
+  if (!sender) return { data: null, error: 'Sender not found' };
+
+  const { data: receiver } = await adminClient
+    .from('members')
+    .select('full_name, email')
+    .eq('id', parsed.data.receivingMemberId)
+    .single();
+
+  if (!receiver) return { data: null, error: 'Receiving member not found' };
+
+  // Insert referral row
+  const supabase = await createClient();
+  const { data: referral, error } = await supabase
+    .from('referrals')
+    .insert({
+      organization_id: sender.organization_id,
+      referring_member_id: member.data.memberId,
+      receiving_member_id: parsed.data.receivingMemberId,
+      referred_contact_name: parsed.data.recipientEmail,
+      referred_contact_email: parsed.data.recipientEmail,
+      notes: parsed.data.message,
+      status: 'passed',
+    })
+    .select('id')
+    .single();
+
+  if (error || !referral) {
+    return { data: null, error: error?.message ?? 'Failed to create referral' };
+  }
+
+  // Send email to recipient via NotificationService
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    const notifier = createResendNotificationService(resendKey);
+    await notifier.sendEmail({
+      to: parsed.data.recipientEmail,
+      subject: `${sender.full_name} wants to introduce you to ${receiver.full_name}`,
+      html: `<p>${parsed.data.message.replace(/\n/g, '<br>')}</p>`,
+    });
+  }
+
+  // Insert notification for the referred-to member
+  await adminClient.from('notifications').insert({
+    member_id: parsed.data.receivingMemberId,
+    type: 'new_referral',
+    title: `${sender.full_name} referred you to someone`,
+    body: `${sender.full_name} referred you to someone in their network`,
+    related_entity_type: 'member',
+    related_entity_id: member.data.memberId,
+  });
+
+  return { data: { id: referral.id }, error: null };
 }

@@ -27,6 +27,7 @@ const NAV_LINKS: NavLink[] = [
   { href: '/asks', label: 'Asks' },
   { href: '/introductions', label: 'Introductions' },
   { href: '/chapter/asks', label: 'Chapter' },
+  { href: '/chapter/members', label: 'My Chapter' },
   { href: '/referrals', label: 'Referrals' },
   {
     href: '/chapter/admin',
