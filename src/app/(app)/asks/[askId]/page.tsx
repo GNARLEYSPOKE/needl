@@ -91,6 +91,9 @@ export default async function AskDetailPage({ params }: AskDetailPageProps) {
                     <div className="min-w-0 flex-1">
                       <p className="font-medium">{match.member_name}</p>
                       <p className="text-muted-foreground text-sm">{match.company_name}</p>
+                      {match.chapter_name && (
+                        <p className="text-muted-foreground text-xs">{match.chapter_name}</p>
+                      )}
                     </div>
                     <Badge variant="outline" className="text-xs">
                       {match.asker_action}

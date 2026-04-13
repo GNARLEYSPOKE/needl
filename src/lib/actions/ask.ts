@@ -116,6 +116,7 @@ interface MatchWithProfile extends MatchRow {
   company_name: string;
   tagline: string;
   avatar_url: string | null;
+  chapter_name: string;
 }
 
 export async function getAskWithMatches(askId: string): Promise<{
@@ -159,6 +160,22 @@ export async function getAskWithMatches(askId: string): Promise<{
     .select('id, full_name, avatar_url')
     .in('id', memberIds);
 
+  const { data: memberships } = await adminClient
+    .from('chapter_memberships')
+    .select('member_id, chapter_id')
+    .in('member_id', memberIds)
+    .eq('status', 'active');
+
+  const chapterIds = Array.from(new Set(memberships?.map((m) => m.chapter_id) ?? []));
+  const { data: chapters } = chapterIds.length
+    ? await adminClient.from('chapters').select('id, name').in('id', chapterIds)
+    : { data: [] };
+
+  const chapterNameMap = new Map(chapters?.map((c) => [c.id, c.name]) ?? []);
+  const memberChapterMap = new Map(
+    memberships?.map((m) => [m.member_id, chapterNameMap.get(m.chapter_id) ?? '']) ?? [],
+  );
+
   const profileMap = new Map(profiles?.map((p) => [p.member_id, p]) ?? []);
   const memberMap = new Map(members?.map((m) => [m.id, m]) ?? []);
 
@@ -168,6 +185,7 @@ export async function getAskWithMatches(askId: string): Promise<{
     company_name: profileMap.get(m.matched_member_id)?.company_name ?? '',
     tagline: profileMap.get(m.matched_member_id)?.tagline ?? '',
     avatar_url: memberMap.get(m.matched_member_id)?.avatar_url ?? null,
+    chapter_name: memberChapterMap.get(m.matched_member_id) ?? '',
   }));
 
   return { data: { ask, matches: matchesWithProfiles }, error: null };
