@@ -1,10 +1,18 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
+import { createServiceClient } from '@/lib/supabase/admin';
 import { SearchForm } from '@/components/search/search-form';
 
-export default async function SearchPage() {
+export default async function SearchPage(): Promise<React.ReactElement> {
   const { userId } = await auth();
   if (!userId) redirect('/sign-in');
+
+  const adminClient = createServiceClient();
+  const { data: member } = await adminClient
+    .from('members')
+    .select('full_name')
+    .eq('clerk_user_id', userId)
+    .single();
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 py-8">
@@ -13,7 +21,7 @@ export default async function SearchPage() {
         Find the right person anywhere in your network.
       </p>
       <div className="mt-6">
-        <SearchForm />
+        <SearchForm senderName={member?.full_name ?? ''} />
       </div>
     </div>
   );

@@ -171,3 +171,129 @@ export async function searchMembers(
 
   return { data: matchResults, error: null };
 }
+
+// ============================================================================
+// Search by Name/Company (ILIKE — non-semantic, direct people lookup)
+// ============================================================================
+
+export interface PersonResult {
+  member_id: string;
+  full_name: string;
+  avatar_url: string | null;
+  company_name: string;
+  tagline: string;
+  what_i_do: string;
+  geography_served: string[];
+  chapter_name: string;
+}
+
+export async function searchByName(
+  query: string,
+): Promise<{ data: PersonResult[] | null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
+
+  if (!query || query.trim().length < 2) {
+    return { data: [], error: null };
+  }
+
+  const adminClient = createServiceClient();
+
+  // Get requester's org
+  const { data: memberRow } = await adminClient
+    .from('members')
+    .select('organization_id')
+    .eq('id', member.data.memberId)
+    .single();
+
+  if (!memberRow) return { data: null, error: 'Organization not found' };
+
+  // ILIKE pattern
+  const pattern = `%${query.trim()}%`;
+
+  // Find members in same org with name match
+  const { data: nameMatches } = await adminClient
+    .from('members')
+    .select('id, full_name, avatar_url')
+    .eq('organization_id', memberRow.organization_id)
+    .eq('is_active', true)
+    .ilike('full_name', pattern)
+    .neq('id', member.data.memberId)
+    .limit(5);
+
+  // Find profiles with company match (in same org)
+  const { data: orgMembers } = await adminClient
+    .from('members')
+    .select('id')
+    .eq('organization_id', memberRow.organization_id)
+    .eq('is_active', true)
+    .neq('id', member.data.memberId);
+
+  const orgMemberIds = orgMembers?.map((m) => m.id) ?? [];
+
+  const { data: companyMatches } = orgMemberIds.length
+    ? await adminClient
+        .from('member_profiles')
+        .select('member_id, company_name, tagline, what_i_do, geography_served')
+        .in('member_id', orgMemberIds)
+        .ilike('company_name', pattern)
+        .limit(5)
+    : { data: [] };
+
+  // Collect unique member IDs
+  const memberIds = new Set<string>();
+  nameMatches?.forEach((m) => memberIds.add(m.id));
+  companyMatches?.forEach((m) => memberIds.add(m.member_id));
+
+  if (memberIds.size === 0) return { data: [], error: null };
+
+  const idArray = Array.from(memberIds);
+
+  // Fetch full member info
+  const { data: members } = await adminClient
+    .from('members')
+    .select('id, full_name, avatar_url')
+    .in('id', idArray);
+
+  const { data: profiles } = await adminClient
+    .from('member_profiles')
+    .select('member_id, company_name, tagline, what_i_do, geography_served')
+    .in('member_id', idArray);
+
+  const profileMap = new Map(profiles?.map((p) => [p.member_id, p]) ?? []);
+
+  // Active chapter memberships → chapter names
+  const { data: memberships } = await adminClient
+    .from('chapter_memberships')
+    .select('member_id, chapter_id')
+    .in('member_id', idArray)
+    .eq('status', 'active');
+
+  const chapterIds = [...new Set(memberships?.map((m) => m.chapter_id) ?? [])];
+  const { data: chapters } = chapterIds.length
+    ? await adminClient.from('chapters').select('id, name').in('id', chapterIds)
+    : { data: [] };
+
+  const chapterNameMap = new Map(chapters?.map((c) => [c.id, c.name]) ?? []);
+  const memberChapterMap = new Map(
+    memberships?.map((m) => [m.member_id, chapterNameMap.get(m.chapter_id) ?? '']) ?? [],
+  );
+
+  const results: PersonResult[] = (members ?? [])
+    .filter((m) => profileMap.has(m.id))
+    .map((m) => {
+      const profile = profileMap.get(m.id)!;
+      return {
+        member_id: m.id,
+        full_name: m.full_name,
+        avatar_url: m.avatar_url,
+        company_name: profile.company_name,
+        tagline: profile.tagline,
+        what_i_do: profile.what_i_do,
+        geography_served: profile.geography_served,
+        chapter_name: memberChapterMap.get(m.id) ?? '',
+      };
+    });
+
+  return { data: results, error: null };
+}

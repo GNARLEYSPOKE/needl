@@ -8,16 +8,22 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { MatchResultCard } from '@/components/search/match-result-card';
-import { searchMembers } from '@/lib/actions/search';
-import type { MatchResult } from '@/lib/actions/search';
+import { MemberSearchCard } from '@/components/search/member-search-card';
+import { searchMembers, searchByName } from '@/lib/actions/search';
+import type { MatchResult, PersonResult } from '@/lib/actions/search';
 
 const COUNTRY_OPTIONS = ['Canada', 'United States', 'United Kingdom', 'Australia'] as const;
 
-export function SearchForm() {
+interface SearchFormProps {
+  senderName: string;
+}
+
+export function SearchForm({ senderName }: SearchFormProps): React.ReactElement {
   const [query, setQuery] = useState('');
   const [countryFilter, setCountryFilter] = useState<string | undefined>(undefined);
   const [chapterOnly, setChapterOnly] = useState(false);
-  const [results, setResults] = useState<MatchResult[] | null>(null);
+  const [serviceResults, setServiceResults] = useState<MatchResult[] | null>(null);
+  const [peopleResults, setPeopleResults] = useState<PersonResult[] | null>(null);
   const [hasSearched, setHasSearched] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -29,17 +35,18 @@ export function SearchForm() {
 
     startTransition(async () => {
       try {
-        const result = await searchMembers({
-          query,
-          countryFilter: chapterOnly ? undefined : countryFilter,
-          chapterOnly,
-        });
-        if (result.error) {
-          toast.error(result.error);
-          setResults(null);
-        } else {
-          setResults(result.data ?? []);
-        }
+        const [serviceResult, peopleResult] = await Promise.all([
+          searchMembers({
+            query,
+            countryFilter: chapterOnly ? undefined : countryFilter,
+            chapterOnly,
+          }),
+          searchByName(query),
+        ]);
+
+        if (serviceResult.error) toast.error(serviceResult.error);
+        setServiceResults(serviceResult.data ?? []);
+        setPeopleResults(peopleResult.data ?? []);
         setHasSearched(true);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Search failed';
@@ -48,6 +55,10 @@ export function SearchForm() {
     });
   }
 
+  const showPeople = peopleResults && peopleResults.length > 0;
+  const showServices = serviceResults && serviceResults.length > 0;
+  const showEmpty = hasSearched && !showPeople && !showServices;
+
   return (
     <div className="space-y-4">
       {/* Search input */}
@@ -55,7 +66,7 @@ export function SearchForm() {
         <Input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          placeholder="What do you need? Describe in plain language..."
+          placeholder="Search by name, company, or what you need..."
           className="text-base"
           onKeyDown={(e) => {
             if (e.key === 'Enter') {
@@ -123,24 +134,38 @@ export function SearchForm() {
               <CardContent className="space-y-3">
                 <Skeleton className="h-4 w-full" />
                 <Skeleton className="h-3 w-3/4" />
-                <Skeleton className="h-2 w-full" />
               </CardContent>
             </Card>
           ))}
         </div>
       )}
 
-      {/* Results */}
-      {!isPending && results && results.length > 0 && (
-        <div className="space-y-4">
-          {results.map((result) => (
-            <MatchResultCard key={result.member_id} result={result} />
-          ))}
-        </div>
+      {/* People section */}
+      {!isPending && showPeople && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-tight">People</h2>
+          <div className="space-y-4">
+            {peopleResults!.map((person) => (
+              <MemberSearchCard key={person.member_id} person={person} senderName={senderName} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Service Matches section */}
+      {!isPending && showServices && (
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold tracking-tight">Service Matches</h2>
+          <div className="space-y-4">
+            {serviceResults!.map((result) => (
+              <MatchResultCard key={result.member_id} result={result} />
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Empty state */}
-      {!isPending && hasSearched && results && results.length === 0 && (
+      {!isPending && showEmpty && (
         <div className="py-12 text-center">
           <p className="text-muted-foreground text-sm">
             No matches found{countryFilter ? ` in ${countryFilter}` : ''}. Try broadening your
