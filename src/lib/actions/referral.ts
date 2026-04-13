@@ -185,6 +185,149 @@ export async function createExternalReferral(
   return { data: { id: referral.id }, error: null };
 }
 
+export async function referNeedlMemberForAsk(input: {
+  askId: string;
+  selectedMemberId: string;
+  note: string;
+}): Promise<{ data: { id: string } | null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
+
+  if (!input.askId || !input.selectedMemberId) {
+    return { data: null, error: 'Missing ask or member' };
+  }
+
+  const adminClient = createServiceClient();
+
+  const { data: sender } = await adminClient
+    .from('members')
+    .select('full_name, organization_id')
+    .eq('id', member.data.memberId)
+    .single();
+  if (!sender) return { data: null, error: 'Sender not found' };
+
+  const { data: ask } = await adminClient
+    .from('asks')
+    .select('id, body, member_id')
+    .eq('id', input.askId)
+    .single();
+  if (!ask) return { data: null, error: 'Ask not found' };
+
+  const { data: selected } = await adminClient
+    .from('members')
+    .select('full_name, email')
+    .eq('id', input.selectedMemberId)
+    .single();
+  if (!selected) return { data: null, error: 'Selected member not found' };
+
+  const supabase = await createClient();
+  const { data: referral, error } = await supabase
+    .from('referrals')
+    .insert({
+      organization_id: sender.organization_id,
+      referring_member_id: member.data.memberId,
+      receiving_member_id: input.selectedMemberId,
+      referred_contact_name: selected.full_name,
+      notes: input.note ? `Ask: ${ask.body}\n\n${input.note}` : `Ask: ${ask.body}`,
+      status: 'passed',
+    })
+    .select('id')
+    .single();
+
+  if (error || !referral) {
+    return { data: null, error: error?.message ?? 'Failed to create referral' };
+  }
+
+  await adminClient.from('notifications').insert({
+    member_id: input.selectedMemberId,
+    type: 'new_referral',
+    title: `${sender.full_name} thinks you can help with an ask`,
+    body: input.note ? `${input.note}\n\nAsk: ${ask.body}` : ask.body,
+    related_entity_type: 'ask',
+    related_entity_id: ask.id,
+  });
+
+  return { data: { id: referral.id }, error: null };
+}
+
+export async function referExternalForAsk(input: {
+  askId: string;
+  contactName: string;
+  contactEmail: string;
+  note: string;
+}): Promise<{ data: { id: string } | null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: member.error ?? 'Unauthorized' };
+
+  if (!input.contactName || !input.contactEmail) {
+    return { data: null, error: 'Name and email required' };
+  }
+
+  const adminClient = createServiceClient();
+
+  const { data: sender } = await adminClient
+    .from('members')
+    .select('full_name, organization_id')
+    .eq('id', member.data.memberId)
+    .single();
+  if (!sender) return { data: null, error: 'Sender not found' };
+
+  const { data: ask } = await adminClient
+    .from('asks')
+    .select('id, body, member_id')
+    .eq('id', input.askId)
+    .single();
+  if (!ask) return { data: null, error: 'Ask not found' };
+
+  const { data: asker } = await adminClient
+    .from('members')
+    .select('full_name, email')
+    .eq('id', ask.member_id)
+    .single();
+  if (!asker) return { data: null, error: 'Asker not found' };
+
+  const supabase = await createClient();
+  const { data: referral, error } = await supabase
+    .from('referrals')
+    .insert({
+      organization_id: sender.organization_id,
+      referring_member_id: member.data.memberId,
+      receiving_member_id: ask.member_id,
+      referred_contact_name: input.contactName,
+      referred_contact_email: input.contactEmail,
+      notes: input.note ? `Ask: ${ask.body}\n\n${input.note}` : `Ask: ${ask.body}`,
+      status: 'passed',
+    })
+    .select('id')
+    .single();
+
+  if (error || !referral) {
+    return { data: null, error: error?.message ?? 'Failed to create referral' };
+  }
+
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    const notifier = createResendNotificationService(resendKey);
+    const noteBlock = input.note ? `<p>${input.note.replace(/\n/g, '<br>')}</p>` : '';
+    await notifier.sendEmail({
+      to: input.contactEmail,
+      subject: `${sender.full_name} thought of you — re: ${asker.full_name}'s ask`,
+      html: `<p>Hi ${input.contactName},</p><p>${sender.full_name} thought you might be able to help with this:</p><blockquote>${ask.body}</blockquote>${noteBlock}<p>If interested, reach out to ${asker.full_name} at ${asker.email}.</p>`,
+    });
+  }
+
+  await adminClient.from('notifications').insert({
+    member_id: ask.member_id,
+    type: 'new_referral',
+    title: `${sender.full_name} referred someone to your ask`,
+    body: `${sender.full_name} referred ${input.contactName} (${input.contactEmail}) to your ask.`,
+    related_entity_type: 'ask',
+    related_entity_id: ask.id,
+  });
+
+  return { data: { id: referral.id }, error: null };
+}
+
 export async function rewriteWhatIDoThirdPerson(
   whatIDo: string,
   firstName: string,

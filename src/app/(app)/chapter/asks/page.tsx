@@ -1,8 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { redirect } from 'next/navigation';
 import { getChapterAsks } from '@/lib/actions/chapter';
-import { Card, CardContent } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { ChapterAsksList } from '@/components/chapter/chapter-asks-list';
 
 export default async function ChapterAsksPage() {
   const { userId } = await auth();
@@ -15,7 +14,7 @@ export default async function ChapterAsksPage() {
       <h1 className="text-2xl font-semibold tracking-tight">Chapter Ask Board</h1>
       <p className="text-muted-foreground mt-1 text-sm">Active asks from your chapter members.</p>
 
-      <div className="mt-6 space-y-4">
+      <div className="mt-6">
         {error && <p className="text-destructive text-sm">{error}</p>}
 
         {asks && asks.length === 0 && (
@@ -24,24 +23,7 @@ export default async function ChapterAsksPage() {
           </p>
         )}
 
-        {asks?.map((ask) => (
-          <Card key={ask.id}>
-            <CardContent className="pt-6">
-              <p className="text-sm font-medium">{ask.member_name}</p>
-              <p className="mt-1 text-sm">{ask.body}</p>
-              <div className="mt-2 flex flex-wrap gap-1">
-                {ask.geography_filter.map((geo) => (
-                  <Badge key={geo} variant="outline" className="text-xs">
-                    {geo}
-                  </Badge>
-                ))}
-              </div>
-              <p className="text-muted-foreground mt-2 text-xs">
-                {new Date(ask.created_at).toLocaleDateString()}
-              </p>
-            </CardContent>
-          </Card>
-        ))}
+        {asks && asks.length > 0 && <ChapterAsksList asks={asks} />}
       </div>
     </div>
   );

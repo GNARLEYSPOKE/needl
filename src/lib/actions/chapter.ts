@@ -8,6 +8,8 @@ type AskRow = Database['public']['Tables']['asks']['Row'];
 
 export interface ChapterAsk extends AskRow {
   member_name: string;
+  avatar_url: string | null;
+  company_name: string;
 }
 
 export async function getChapterAsks(): Promise<{
@@ -49,17 +51,26 @@ export async function getChapterAsks(): Promise<{
   if (error) return { data: null, error: error.message };
   if (!asks || asks.length === 0) return { data: [], error: null };
 
-  // Fetch member names
+  // Fetch member names + avatars + company
+  const askMemberIds = [...new Set(asks.map((a) => a.member_id))];
   const { data: members } = await adminClient
     .from('members')
-    .select('id, full_name')
-    .in('id', memberIds);
+    .select('id, full_name, avatar_url')
+    .in('id', askMemberIds);
 
-  const nameMap = new Map(members?.map((m) => [m.id, m.full_name]) ?? []);
+  const { data: profiles } = await adminClient
+    .from('member_profiles')
+    .select('member_id, company_name')
+    .in('member_id', askMemberIds);
+
+  const memberMap = new Map(members?.map((m) => [m.id, m]) ?? []);
+  const companyMap = new Map(profiles?.map((p) => [p.member_id, p.company_name]) ?? []);
 
   const enriched: ChapterAsk[] = asks.map((ask) => ({
     ...ask,
-    member_name: nameMap.get(ask.member_id) ?? 'Unknown',
+    member_name: memberMap.get(ask.member_id)?.full_name ?? 'Unknown',
+    avatar_url: memberMap.get(ask.member_id)?.avatar_url ?? null,
+    company_name: companyMap.get(ask.member_id) ?? '',
   }));
 
   return { data: enriched, error: null };
