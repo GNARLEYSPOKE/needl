@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useTransition } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -14,8 +14,9 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Skeleton } from '@/components/ui/skeleton';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { createExternalReferral } from '@/lib/actions/referral';
+import { createExternalReferral, rewriteWhatIDoThirdPerson } from '@/lib/actions/referral';
 import type { DirectoryMember } from '@/app/(app)/chapter/members/page';
 
 interface ReferMemberModalProps {
@@ -32,11 +33,28 @@ export function ReferMemberModal({
   onOpenChange,
 }: ReferMemberModalProps): React.ReactElement {
   const firstName = member.full_name.split(' ')[0];
-  const initialMessage = `Hi,\n\nI wanted to introduce you to ${firstName} from ${member.company_name}. ${member.what_i_do}\n\nI think you two should connect.\n\nBest,\n${senderName}`;
 
   const [recipientEmail, setRecipientEmail] = useState('');
-  const [message, setMessage] = useState(initialMessage);
+  const [message, setMessage] = useState('');
+  const [isDrafting, setIsDrafting] = useState(true);
   const [isPending, startTransition] = useTransition();
+
+  useEffect(() => {
+    let cancelled = false;
+    async function draft(): Promise<void> {
+      setIsDrafting(true);
+      const { data } = await rewriteWhatIDoThirdPerson(member.what_i_do, firstName);
+      if (cancelled) return;
+      const sentence = data ?? `${firstName} provides ${member.what_i_do}`;
+      const body = `Hi,\n\nI wanted to introduce you to ${member.full_name} from ${member.company_name}. ${sentence} I think they could be a great resource for you.\n\nI think you two should connect.\n\nBest,\n${senderName}`;
+      setMessage(body);
+      setIsDrafting(false);
+    }
+    void draft();
+    return () => {
+      cancelled = true;
+    };
+  }, [member.what_i_do, member.full_name, member.company_name, firstName, senderName]);
 
   function getInitials(name: string): string {
     return name
@@ -103,14 +121,20 @@ export function ReferMemberModal({
           </div>
           <div>
             <Label htmlFor="message">Message</Label>
-            <Textarea
-              id="message"
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-              rows={8}
-              maxLength={500}
-            />
-            <p className="text-muted-foreground mt-1 text-xs">{message.length}/500</p>
+            {isDrafting ? (
+              <Skeleton className="h-[188px] w-full" />
+            ) : (
+              <>
+                <Textarea
+                  id="message"
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  rows={8}
+                  maxLength={500}
+                />
+                <p className="text-muted-foreground mt-1 text-xs">{message.length}/500</p>
+              </>
+            )}
           </div>
         </div>
 
@@ -120,7 +144,7 @@ export function ReferMemberModal({
           </Button>
           <Button
             onClick={handleSend}
-            disabled={isPending || !recipientEmail || message.length < 20}
+            disabled={isPending || isDrafting || !recipientEmail || message.length < 20}
           >
             {isPending ? 'Sending...' : 'Send'}
           </Button>

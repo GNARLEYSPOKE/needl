@@ -4,6 +4,7 @@ import { getCurrentMemberId } from '@/lib/actions/auth';
 import { createClient } from '@/lib/supabase/server';
 import { createServiceClient } from '@/lib/supabase/admin';
 import { createResendNotificationService } from '@/lib/services/notification';
+import { createAnthropicAIService } from '@/lib/services/ai';
 import { LogReferralSchema, ExternalReferralSchema } from '@/lib/validations/referral';
 import type { LogReferralInput, ExternalReferralInput } from '@/lib/validations/referral';
 import type { Database } from '@/types/database';
@@ -182,4 +183,18 @@ export async function createExternalReferral(
   });
 
   return { data: { id: referral.id }, error: null };
+}
+
+export async function rewriteWhatIDoThirdPerson(
+  whatIDo: string,
+  firstName: string,
+): Promise<{ data: string | null; error: string | null }> {
+  const member = await getCurrentMemberId();
+  if (member.error || !member.data) return { data: null, error: 'Unauthorized' };
+
+  const apiKey = process.env.ANTHROPIC_API_KEY;
+  if (!apiKey) return { data: null, error: 'AI service not configured' };
+
+  const aiService = createAnthropicAIService(apiKey);
+  return aiService.rewriteThirdPerson(whatIDo, firstName);
 }

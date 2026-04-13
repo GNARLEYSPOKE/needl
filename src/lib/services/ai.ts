@@ -46,6 +46,10 @@ export interface AIService {
   ): Promise<{ data: string | null; error: string | null }>;
   generateAskNudge(params: AskNudgeParams): Promise<{ data: string | null; error: string | null }>;
   extractGeography(text: string): Promise<{ data: string[] | null; error: string | null }>;
+  rewriteThirdPerson(
+    text: string,
+    firstName: string,
+  ): Promise<{ data: string | null; error: string | null }>;
 }
 
 export function createAnthropicAIService(apiKey: string): AIService {
@@ -146,6 +150,17 @@ Examples: ["Canada", "Ontario", "Toronto"] or ["United States", "California"]`;
       } catch {
         return { data: null, error: 'Failed to parse geography extraction response' };
       }
+    },
+
+    async rewriteThirdPerson(
+      text: string,
+      firstName: string,
+    ): Promise<{ data: string | null; error: string | null }> {
+      const systemPrompt = `Rewrite professional descriptions in third person. Use "they/them" pronouns. Output the rewritten sentence only, no preamble.`;
+      const userMessage = `Rewrite this professional description in third person using the name "${firstName}". Keep it to one sentence under 20 words. Do not start with "I". Original: "${text}"`;
+      const { text: responseText, error } = await ask(systemPrompt, userMessage);
+      if (error || !responseText) return { data: null, error: error ?? 'No response' };
+      return { data: responseText.trim().replace(/^["']|["']$/g, ''), error: null };
     },
   };
 }
