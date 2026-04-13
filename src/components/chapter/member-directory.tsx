@@ -1,9 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Button } from '@/components/ui/button';
+import { Button, buttonVariants } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ReferMemberModal } from '@/components/chapter/refer-member-modal';
 import type { DirectoryMember } from '@/app/(app)/chapter/members/page';
@@ -50,22 +51,28 @@ export function MemberDirectory({ members, senderName }: MemberDirectoryProps): 
                 )}
               </div>
               {member.has_profile && (
-                <>
-                  <p className="text-muted-foreground line-clamp-2 text-xs">{member.tagline}</p>
-                  <p className="text-muted-foreground line-clamp-1 text-xs italic">
-                    {member.what_i_do}
-                  </p>
-                </>
+                <p className="text-muted-foreground line-clamp-1 text-xs">{member.tagline}</p>
               )}
-              <Button
-                onClick={() => setSelectedMember(member)}
-                variant="outline"
-                size="sm"
-                disabled={!member.has_profile}
-                className="mt-2 w-full"
-              >
-                Refer {getFirstName(member.full_name)}
-              </Button>
+              <div className="mt-2 flex w-full flex-col gap-2 sm:flex-row">
+                <Link
+                  href={`/profile/${member.id}`}
+                  className={buttonVariants({
+                    variant: 'outline',
+                    size: 'sm',
+                    className: 'flex-1',
+                  })}
+                >
+                  View Profile
+                </Link>
+                <Button
+                  onClick={() => setSelectedMember(member)}
+                  size="sm"
+                  disabled={!member.has_profile}
+                  className="flex-1"
+                >
+                  Refer {getFirstName(member.full_name)}
+                </Button>
+              </div>
             </CardContent>
           </Card>
         ))}
