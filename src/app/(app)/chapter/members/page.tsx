@@ -10,6 +10,7 @@ export interface DirectoryMember {
   company_name: string;
   tagline: string;
   what_i_do: string;
+  has_profile: boolean;
 }
 
 export default async function ChapterMembersPage(): Promise<React.ReactElement> {
@@ -35,7 +36,7 @@ export default async function ChapterMembersPage(): Promise<React.ReactElement> 
   // Get user's chapter
   const { data: membership } = await adminClient
     .from('chapter_memberships')
-    .select('chapter_id')
+    .select('chapter_id, chapters(name)')
     .eq('member_id', currentMember.id)
     .eq('status', 'active')
     .limit(1)
@@ -48,6 +49,9 @@ export default async function ChapterMembersPage(): Promise<React.ReactElement> 
       </div>
     );
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any -- Supabase join typing
+  const chapterName: string = (membership as any).chapters?.name ?? 'My Chapter';
 
   // Get all active members in chapter (exclude self)
   const { data: chapterMembers } = await adminClient
@@ -62,8 +66,10 @@ export default async function ChapterMembersPage(): Promise<React.ReactElement> 
   if (memberIds.length === 0) {
     return (
       <div className="mx-auto w-full max-w-4xl px-4 py-8">
-        <h1 className="text-2xl font-semibold tracking-tight">My Chapter</h1>
-        <p className="text-muted-foreground mt-1 text-sm">Members in your chapter.</p>
+        <h1 className="text-2xl font-semibold tracking-tight">{chapterName}</h1>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Members in {chapterName} — refer them to your network.
+        </p>
         <p className="text-muted-foreground mt-12 text-center text-sm">
           No other members in your chapter yet.
         </p>
@@ -84,25 +90,24 @@ export default async function ChapterMembersPage(): Promise<React.ReactElement> 
 
   const profileMap = new Map(profiles?.map((p) => [p.member_id, p]) ?? []);
 
-  const directoryMembers: DirectoryMember[] = (members ?? [])
-    .map((m) => {
-      const profile = profileMap.get(m.id);
-      return {
-        id: m.id,
-        full_name: m.full_name,
-        avatar_url: m.avatar_url,
-        company_name: profile?.company_name ?? '',
-        tagline: profile?.tagline ?? '',
-        what_i_do: profile?.what_i_do ?? '',
-      };
-    })
-    .filter((m) => m.company_name); // only members with profiles
+  const directoryMembers: DirectoryMember[] = (members ?? []).map((m) => {
+    const profile = profileMap.get(m.id);
+    return {
+      id: m.id,
+      full_name: m.full_name,
+      avatar_url: m.avatar_url,
+      company_name: profile?.company_name ?? '',
+      tagline: profile?.tagline ?? '',
+      what_i_do: profile?.what_i_do ?? '',
+      has_profile: !!profile?.company_name,
+    };
+  });
 
   return (
     <div className="mx-auto w-full max-w-4xl px-4 py-8">
-      <h1 className="text-2xl font-semibold tracking-tight">My Chapter</h1>
+      <h1 className="text-2xl font-semibold tracking-tight">{chapterName}</h1>
       <p className="text-muted-foreground mt-1 text-sm">
-        Members in your chapter — refer them to your network.
+        Members in {chapterName} — refer them to your network.
       </p>
       <div className="mt-6">
         <MemberDirectory members={directoryMembers} senderName={currentMember.full_name} />

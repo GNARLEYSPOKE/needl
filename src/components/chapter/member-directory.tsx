@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 import { ReferMemberModal } from '@/components/chapter/refer-member-modal';
 import type { DirectoryMember } from '@/app/(app)/chapter/members/page';
 
@@ -40,16 +41,27 @@ export function MemberDirectory({ members, senderName }: MemberDirectoryProps): 
               </Avatar>
               <div className="w-full">
                 <p className="truncate text-sm font-medium">{member.full_name}</p>
-                <p className="text-muted-foreground truncate text-xs">{member.company_name}</p>
+                {member.has_profile ? (
+                  <p className="text-muted-foreground truncate text-xs">{member.company_name}</p>
+                ) : (
+                  <Badge variant="outline" className="mt-1 text-xs">
+                    Profile incomplete
+                  </Badge>
+                )}
               </div>
-              <p className="text-muted-foreground line-clamp-2 text-xs">{member.tagline}</p>
-              <p className="text-muted-foreground line-clamp-1 text-xs italic">
-                {member.what_i_do}
-              </p>
+              {member.has_profile && (
+                <>
+                  <p className="text-muted-foreground line-clamp-2 text-xs">{member.tagline}</p>
+                  <p className="text-muted-foreground line-clamp-1 text-xs italic">
+                    {member.what_i_do}
+                  </p>
+                </>
+              )}
               <Button
                 onClick={() => setSelectedMember(member)}
                 variant="outline"
                 size="sm"
+                disabled={!member.has_profile}
                 className="mt-2 w-full"
               >
                 Refer {getFirstName(member.full_name)}

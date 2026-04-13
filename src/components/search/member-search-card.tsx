@@ -73,6 +73,7 @@ export function MemberSearchCard({
             company_name: person.company_name,
             tagline: person.tagline,
             what_i_do: person.what_i_do,
+            has_profile: true,
           }}
           senderName={senderName}
           open={open}
