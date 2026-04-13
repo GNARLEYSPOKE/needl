@@ -101,7 +101,6 @@ export default async function AskDetailPage({ params }: AskDetailPageProps) {
                   </div>
 
                   <p className="text-muted-foreground mt-2 text-sm">{match.tagline}</p>
-                  <p className="mt-1 text-sm italic">{match.match_reason}</p>
 
                   <div className="mt-2">
                     <Progress value={scorePercent} />

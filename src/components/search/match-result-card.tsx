@@ -37,8 +37,6 @@ export function MatchResultCard({ result }: MatchResultCardProps) {
       <CardContent className="space-y-3">
         <p className="text-sm">{result.tagline}</p>
 
-        <p className="text-muted-foreground text-sm italic">{result.match_reason}</p>
-
         <div>
           <div className="mb-1 flex items-center justify-between">
             <span className="text-muted-foreground text-xs">Match confidence</span>
